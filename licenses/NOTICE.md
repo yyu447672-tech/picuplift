@@ -1,6 +1,6 @@
 # PicUplift open-source notices
 
-PicUplift processes images locally. The application files do not load remote libraries, fonts, advertisements, or analytics. The following third-party components are distributed locally; retain this directory when redistributing the project.
+PicUplift processes images locally. Image conversion libraries are bundled locally; the tools do not load remote conversion libraries, fonts, or advertisements. Google Analytics is loaded separately to measure visits and interactions, never image content. The following third-party components are distributed locally; retain this directory when redistributing the project.
 
 ## libheif-js 1.23.5 / libheif / libde265
 

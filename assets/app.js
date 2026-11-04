@@ -2,11 +2,13 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const tool = document.body.dataset.tool;
+  const isToolPage = ['heic', 'webp', 'compress'].includes(tool);
   const config = PicCopy.pages[tool];
   let language = new URLSearchParams(location.search).get('lang') === 'zh' ? 'zh' : 'en';
   let items = [], nextId = 0, busy = false, packing = false, controller;
   let notice = { key: '', detail: '', error: false };
   let generation = 0;
+  let sampleGeneration = 0, loadingSample = false;
   const rowNodes = new Map();
   const t = key => PicCopy.common[language][key];
   const bytes = number => {
@@ -42,6 +44,7 @@
     language = next;
     document.documentElement.lang = next === 'zh' ? 'zh-CN' : 'en';
     document.querySelectorAll('[data-copy]').forEach(node => { node.textContent = t(node.dataset.copy); });
+    document.querySelectorAll('[data-copy-label]').forEach(node => { node.setAttribute('aria-label', t(node.dataset.copyLabel)); });
     document.querySelectorAll('[data-page]').forEach(node => { node.textContent = config[language][node.dataset.page]; });
     document.querySelectorAll('[data-tool-name]').forEach(node => {
       node.textContent = t({ heic: 'navHeic', webp: 'navWebp', compress: 'navCompress' }[node.dataset.toolName]);
@@ -55,7 +58,7 @@
     $('language-toggle').lang = next === 'en' ? 'zh-CN' : 'en';
     $('language-toggle').setAttribute('aria-label', next === 'en' ? '切换到中文' : 'Switch to English');
     localizeLinks();
-    if (tool !== 'home') {
+    if (isToolPage) {
       $('file-input').setAttribute('aria-label', t('browse'));
       $('file-list').setAttribute('aria-label', t('resultsStep'));
       $('progress').setAttribute('aria-label', t('processing'));
@@ -64,7 +67,7 @@
     }
   }
   $('language-toggle').addEventListener('click', () => setLanguage(language === 'en' ? 'zh' : 'en'));
-  if (tool === 'home') { setLanguage(language); return; }
+  if (!isToolPage) { setLanguage(language); return; }
 
   function release(item) {
     if (item.output?.url) URL.revokeObjectURL(item.output.url);
@@ -84,11 +87,12 @@
     $('settings').disabled = busy || packing;
     $('file-input').disabled = busy || packing;
     $('browse').disabled = busy || packing;
+    $('sample').disabled = busy || packing || loadingSample;
     $('clear').disabled = busy || packing || !items.length;
-    $('start').disabled = busy || packing || !items.length;
+    $('start').disabled = busy || packing || loadingSample || !items.length;
     $('cancel').hidden = !busy;
     $('cancel').disabled = Boolean(controller?.signal.aborted);
-    $('zip').disabled = busy || packing || !items.some(item => item.output);
+    $('zip').disabled = busy || packing || loadingSample || !items.some(item => item.output);
     $('zip').textContent = t(packing ? 'zipBusy' : 'zip');
     $('drop-zone').classList.toggle('is-disabled', busy || packing);
   }
@@ -155,14 +159,30 @@
     renderAll(); showNotice(key);
     $('progress').hidden = true;
   }
-  function addFiles(files) {
+  function addFiles(files, isSample = false) {
     if (busy || packing || !files.length) return;
-    for (const file of files) items.push({ id: String(++nextId), file, status: 'queued', error: null, output: null });
+    if (!isSample) { sampleGeneration++; loadingSample = false; }
+    // A manual upload replaces the demo, never the other way round. Repeated
+    // demo clicks replace its own row while preserving every user File object.
+    items.filter(item => item.isSample).forEach(release);
+    items = items.filter(item => !item.isSample);
+    for (const file of files) items.push({ id: String(++nextId), file, status: 'queued', error: null, output: null, isSample });
     $('file-input').value = '';
     invalidate('added');
   }
   $('browse').addEventListener('click', () => $('file-input').click());
   $('file-input').addEventListener('change', event => addFiles(Array.from(event.target.files)));
+  $('sample').addEventListener('click', async () => {
+    if (busy || packing || loadingSample) return;
+    const request = ++sampleGeneration;
+    loadingSample = true; updateControls(); showNotice('sampleLoading');
+    try {
+      const file = await PicLocalAssets.sample(tool);
+      if (request !== sampleGeneration) return;
+      addFiles([file], true); showNotice('sampleAdded');
+    } catch (_) { if (request === sampleGeneration) showNotice('sampleError', '', true); }
+    finally { if (request === sampleGeneration) { loadingSample = false; updateControls(); } }
+  });
   for (const eventName of ['dragenter', 'dragover']) $('drop-zone').addEventListener(eventName, event => {
     event.preventDefault(); if (!busy && !packing) $('drop-zone').classList.add('is-dragging');
   });
@@ -176,6 +196,7 @@
   $('settings').addEventListener('input', () => { if (!busy && !packing) invalidate('changed'); });
   $('clear').addEventListener('click', () => {
     if (busy || packing) return;
+    sampleGeneration++; loadingSample = false;
     items.forEach(release); items = []; renderAll(); showNotice('cleared'); $('progress').hidden = true;
   });
   $('cancel').addEventListener('click', () => { controller?.abort(); updateControls(); });
@@ -199,6 +220,7 @@
         await new Promise(resolve => setTimeout(resolve, 0));
         if (job !== generation) return;
         try {
+          if (tool === 'heic') await PicLocalAssets.heic(signal);
           const result = await PicCore.convert(item.file, tool, settings, signal);
           if (job !== generation) return;
           const extension = result.blob.type.split('/')[1].replace('jpeg', 'jpg');
@@ -238,7 +260,7 @@
     }
   });
   $('zip').addEventListener('click', async () => {
-    if (busy || packing) return;
+    if (busy || packing || loadingSample) return;
     const success = items.filter(item => item.output);
     if (!success.length) { showNotice('noneReady', '', true); return; }
     if (!PicCore.canZip(success.map(item => item.output.blob.size))) { showNotice('zipLimit', '', true); return; }
@@ -257,6 +279,7 @@
   });
   window.addEventListener('pagehide', () => {
     generation++;
+    sampleGeneration++; loadingSample = false;
     controller?.abort(); items.forEach(release);
     // Never restore stale, revoked output URLs from the back/forward cache.
     items.forEach(item => { item.status = 'queued'; });
