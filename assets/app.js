@@ -2,7 +2,8 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const tool = document.body.dataset.tool;
-  const isToolPage = ['heic', 'webp', 'compress'].includes(tool);
+  const isToolPage = ['heic', 'heicPng', 'webp', 'compress'].includes(tool);
+  const isHeicTool = tool === 'heic' || tool === 'heicPng';
   const config = PicCopy.pages[tool];
   let language = new URLSearchParams(location.search).get('lang') === 'zh' ? 'zh' : 'en';
   let items = [], nextId = 0, busy = false, packing = false, controller;
@@ -47,7 +48,7 @@
     document.querySelectorAll('[data-copy-label]').forEach(node => { node.setAttribute('aria-label', t(node.dataset.copyLabel)); });
     document.querySelectorAll('[data-page]').forEach(node => { node.textContent = config[language][node.dataset.page]; });
     document.querySelectorAll('[data-tool-name]').forEach(node => {
-      node.textContent = t({ heic: 'navHeic', webp: 'navWebp', compress: 'navCompress' }[node.dataset.toolName]);
+      node.textContent = t({ heic: 'navHeic', heicPng: 'navHeicPng', webp: 'navWebp', compress: 'navCompress' }[node.dataset.toolName]);
     });
     document.querySelectorAll('[data-tool-short]').forEach(node => { node.textContent = PicCopy.pages[node.dataset.toolShort][language].short; });
     document.querySelectorAll('[data-step-title]').forEach(node => { node.textContent = config[language].steps[Number(node.dataset.stepTitle)][0]; });
@@ -177,7 +178,7 @@
     const request = ++sampleGeneration;
     loadingSample = true; updateControls(); showNotice('sampleLoading');
     try {
-      const file = await PicLocalAssets.sample(tool);
+      const file = await PicLocalAssets.sample(isHeicTool ? 'heic' : tool);
       if (request !== sampleGeneration) return;
       addFiles([file], true); showNotice('sampleAdded');
     } catch (_) { if (request === sampleGeneration) showNotice('sampleError', '', true); }
@@ -220,7 +221,7 @@
         await new Promise(resolve => setTimeout(resolve, 0));
         if (job !== generation) return;
         try {
-          if (tool === 'heic') await PicLocalAssets.heic(signal);
+          if (isHeicTool) await PicLocalAssets.heic(signal);
           const result = await PicCore.convert(item.file, tool, settings, signal);
           if (job !== generation) return;
           const extension = result.blob.type.split('/')[1].replace('jpeg', 'jpg');

@@ -16,6 +16,7 @@
   }
   function outputType(tool, source, choice = 'auto') {
     if (tool === 'heic') return 'image/jpeg';
+    if (tool === 'heicPng') return 'image/png';
     if (tool === 'webp') return 'image/png';
     if (choice !== 'auto') return `image/${choice}`;
     return source === 'jpeg' ? 'image/jpeg' : 'image/webp';
@@ -103,7 +104,7 @@
   async function convert(file, tool, settings, signal) {
     const header = new Uint8Array(await file.slice(0, 65536).arrayBuffer());
     const sourceFormat = sniff(header);
-    const allowed = tool === 'heic' ? ['heic'] : tool === 'webp' ? ['webp'] : ['jpeg', 'png', 'webp'];
+    const allowed = (tool === 'heic' || tool === 'heicPng') ? ['heic'] : tool === 'webp' ? ['webp'] : ['jpeg', 'png', 'webp'];
     if (!allowed.includes(sourceFormat)) throw codedError('WRONG_FORMAT');
     if (signal?.aborted) throw codedError('CANCELLED');
     let source, bitmap, sourceWidth, sourceHeight, frameOnly = isAnimated(header, sourceFormat);
