@@ -94,25 +94,29 @@ if (location.protocol === 'https:' || location.protocol === 'http:') {
 <h1>How to Convert HEIC to JPG on Mac</h1>
 <p class="intro-text">Good news: your Mac already opens HEIC files — Preview and Photos handle them natively. The problem comes when you need to <strong>share</strong> those photos: many websites, email clients, and Windows PCs still choke on .heic. Here are three free ways to turn them into JPGs that work everywhere.</p>
 
-<h2>Method 1: Convert in your browser (best for batches)</h2>
-<p>If you have dozens of photos to convert, this is the fastest route. <a href="./heic-to-jpg.html">PicUplift's HEIC to JPG converter</a> decodes your photos locally with WebAssembly — nothing is uploaded to any server.</p>
+<h2>Method 1: Convert in your browser (ZIP downloads, across platforms)</h2>
+<p>Preview can batch-convert photos too. For dozens or hundreds of HEIC photos, <a href="./heic-to-jpg.html">PicUplift's HEIC to JPG converter</a> offers a browser workflow with ZIP downloads that you can also use on Windows or Linux. It decodes your photos locally with WebAssembly — nothing is uploaded to any server.</p>
 <ol class="steps">
 <li><strong>Open the converter</strong> in Safari, Chrome, or Edge on your Mac.</li>
 <li><strong>Drag in your .heic files</strong> — you can drop dozens at once.</li>
 <li><strong>Keep the default 90% quality</strong> (or lower it if you want smaller files), then click convert.</li>
 <li><strong>Download</strong> each JPG individually or grab them all as a ZIP.</li>
 </ol>
-<p>No signup, no watermark, no daily limit. Because everything runs on your device, there's no queue and no waiting for a server.</p>
+<p>No signup, no watermark, no daily limit. PicUplift sets no conversion-count cap and processes large batches one image at a time. Actual capacity still depends on your device's memory, image dimensions, and browser; split very large folders into smaller batches if needed.</p>
+<p>For a mixed batch of JPG, PNG, and WebP images, or for WebP output, use <a href="./compress-image.html">PicUplift's image compressor</a> and choose your output format. WebP export requires a browser that supports it; Preview has no built-in WebP export. If your folder also includes HEIC files, convert those to JPG first, then process the JPG, PNG, and WebP files together in the compressor.</p>
 
-<h2>Method 2: Use Preview (built in, one at a time)</h2>
-<p>Preview is already on your Mac, and it exports JPGs in a few clicks. This is the simplest option for a single photo.</p>
+<h2>Method 2: Use Preview (built in, including batch export)</h2>
+<p>Preview is already on your Mac and can export one or many HEIC photos as JPG. It is a convenient option for a few photos or a batch of images in the same source format.</p>
 <ol class="steps">
-<li><strong>Double-click the .heic file</strong> to open it in Preview.</li>
-<li>Go to <strong>File → Export</strong>.</li>
-<li>Set the format to <strong>JPEG</strong> and pick a quality (90% is a good default).</li>
-<li>Choose where to save, then click <strong>Save</strong>.</li>
+<li>In <strong>Finder</strong>, select the HEIC photos you want to convert. In a folder containing only those photos, press <strong>⌘A</strong> to select them all.</li>
+<li>Right-click the selection and choose <strong>Open With → Preview</strong>. Keep the images together in one Preview window.</li>
+<li>Click an image in Preview's thumbnail sidebar, then press <strong>⌘A</strong> to select all the images. If the sidebar is hidden, choose <strong>View → Thumbnails</strong> first.</li>
+<li>Go to <strong>File → Export Selected Images</strong>.</li>
+<li>Choose a destination folder, click <strong>Options</strong>, set <strong>Format</strong> to <strong>JPEG</strong>, and adjust the quality.</li>
+<li>Click <strong>Choose</strong> (or <strong>Save</strong>, depending on your macOS version) to export the selected images.</li>
 </ol>
-<p>The downside: Preview exports one file at a time. For a folder full of photos, use Method 1 instead.</p>
+<p>For a large folder, start with batches of around <strong>200 photos or fewer</strong>, and keep each batch in the same source format where possible. This is a practical starting point, not a fixed Preview limit: stability depends on your macOS version, image dimensions, and available memory. If Preview slows down or an export fails, try a smaller batch.</p>
+<p>For just one photo, use <strong>File → Export</strong> and choose <strong>JPEG</strong>.</p>
 
 <h2>Method 3: Export from Photos (good if your library lives there)</h2>
 <p>If your photos are already in the Photos app, you can export JPG copies without touching the originals.</p>
@@ -126,8 +130,9 @@ if (location.protocol === 'https:' || location.protocol === 'http:') {
 
 <h2>Which method should you pick?</h2>
 <ul>
-<li><strong>Dozens of photos, right now</strong> → Method 1 (browser converter).</li>
-<li><strong>Just one photo</strong> → Method 2 (Preview, already installed).</li>
+<li><strong>A few HEIC photos</strong> → Method 2 (Preview, already installed, with batch export available).</li>
+<li><strong>Dozens or hundreds of HEIC photos, ZIP downloads, or a cross-platform workflow</strong> → Method 1 (browser converter; batch capacity depends on your device).</li>
+<li><strong>Mixed JPG/PNG/WebP files or WebP output</strong> → Method 1's linked image compressor; convert any HEIC files to JPG first.</li>
 <li><strong>Photos already in your library</strong> → Method 3 (Photos export).</li>
 </ul>
 
