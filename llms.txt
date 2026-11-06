@@ -25,3 +25,9 @@
 ## Pricing
 
 - All four tools are free, with no registration, conversion quotas, or advertisements. There is no paid plan, trial, or subscription.
+
+## PDF tools
+
+- [Image to PDF](https://picuplift.com/convert-image-to-pdf.html): Merge JPG and PNG pictures into one PDF locally, one image per page.
+- [PDF to Images](https://picuplift.com/convert-pdf-to-image.html): Render PDF pages to JPG or PNG locally, with individual and ZIP downloads. Requires HTTP(S), including a local web server. No OCR or editable document conversion.
+- [Markdown to PDF](https://picuplift.com/convert-markdown-to-pdf.html): Convert Markdown to an image-based PDF locally using system fonts. PDF text is not selectable or searchable. No remote images are fetched.
