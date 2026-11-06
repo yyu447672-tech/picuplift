@@ -1,0 +1,27 @@
+# PicUplift
+
+> [PicUplift](https://picuplift.com/) is a free suite of image tools that runs entirely in your browser. Convert HEIC to JPG or PNG, turn WebP into PNG, and compress JPG, PNG, and WebP. No signup, no uploads, and no conversion quotas. Images are processed locally on the user's device and are never uploaded.
+
+## Tools
+
+- [HEIC to JPG Converter](https://picuplift.com/heic-to-jpg.html): Convert HEIC and HEIF phone photos to JPG, entirely on your device. Default JPG quality is 90%. Batch conversion, adjustable quality, and ZIP downloads.
+- [HEIC to PNG Converter](https://picuplift.com/heic-to-png.html): Convert HEIC and HEIF images to PNG with lossless PNG encoding. Batch conversion and ZIP downloads.
+- [WebP to PNG Converter](https://picuplift.com/webp-to-png.html): Convert WebP images to PNG, keeping transparent backgrounds.
+- [Image Compressor](https://picuplift.com/compress-image.html): Compress JPG, PNG, and WebP images. Default quality is 80%. Compare real file sizes before downloading, or keep the original if the output grew.
+
+## Guides
+
+- [How to Convert HEIC to JPG on Windows 11](https://picuplift.com/how-to-convert-heic-to-jpg-on-windows-11.html): Three methods to convert HEIC to JPG on Windows 11, including PicUplift.
+- [How to Convert HEIC to JPG on Mac](https://picuplift.com/how-to-convert-heic-to-jpg-on-mac.html): Methods to convert HEIC to JPG on a Mac, including PicUplift.
+
+## Privacy
+
+- Images are processed locally in the browser tab and are never uploaded or saved by the site.
+- No signup and no account. PicUplift sets no artificial file-size or conversion-count caps; practical limits come from device memory, browser decoders, image dimensions, and ZIP format capacity.
+- The site uses Google Analytics to measure visits and interactions (such as page views, scrolling, and clicks). Images are always processed locally and are never uploaded.
+- Converted outputs are static images: animated WebP or PNG uses its first frame, and multi-image HEIC uses its primary image. Converted outputs do not copy camera metadata. Originals stay untouched.
+- PicUplift works offline after downloading the complete folder: open index.html in a current desktop Chrome or Edge, keeping the assets folder alongside the pages.
+
+## Pricing
+
+- All four tools are free, with no registration, conversion quotas, or advertisements. There is no paid plan, trial, or subscription.
