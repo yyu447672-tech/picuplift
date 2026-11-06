@@ -1,0 +1,13 @@
+# PicUplift local PDF tool dependencies
+
+The website is static and has no build or package-install step. These files are pinned, bundled on this site and loaded from the same origin. No CDN is contacted at runtime.
+
+- **pdf-lib 1.17.1**: `assets/vendor/pdf-lib-1.17.1.min.js`, unmodified `dist/pdf-lib.min.js` from the official npm package. MIT license in `pdf-lib-1.17.1-LICENSE.md`. Project: https://github.com/Hopding/pdf-lib ; API documentation: https://pdf-lib.js.org/docs/api/classes/pdfdocument . Package: https://registry.npmjs.org/pdf-lib/-/pdf-lib-1.17.1.tgz . SHA-512 integrity: `sha512-V/mpyJAoTsN4cnP31vc0wfNA1+p20evqqnap0KLoRUN0Yk/p3wN52DOEsL4oBFcLdb76hlpKPtzJIgo67j/XLw==`.
+- **Mozilla PDF.js / pdfjs-dist 6.5.438**: `assets/vendor/pdfjs-6.5.438/`. Unmodified package display module `build/pdf.mjs`, module worker `build/pdf.worker.mjs`, CMaps, standard fonts and Wasm decoders, with their accompanying license files retained. Apache-2.0 license in `pdfjs-6.5.438-LICENSE.txt`. Third-party standard-font and decoder notices remain beside those assets (`standard_fonts/LICENSE_*`, `wasm/LICENSE_*`, `cmaps/LICENSE`). Project and published stable version: https://mozilla.github.io/pdf.js/getting_started/ . API: https://mozilla.github.io/pdf.js/api/draft/module-pdfjsLib.html . Package: https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.5.438.tgz . SHA-512 integrity: `sha512-vg8Pw1x+AFKy4AMDvhuWl5cOYV8d698UoEANoFFhc79hqXDnZQqnOXoxw3HG907WHOg1JYOvLhP756boddFxpA==`.
+- **JSZip 3.10.1**: reused existing local `assets/vendor/jszip-3.10.1.min.js` and `licenses/jszip-LICENSE.md`.
+
+Both downloaded package archives were verified against the official npm registry `dist.integrity` SHA-512 values before extracting these assets. Source archives and verification records are development evidence, outside the website package.
+
+PDF.js CVE-2024-4367 affected versions <=4.1.392 and was fixed in 4.2.67: https://github.com/mozilla/pdf.js/security/advisories/GHSA-wgrm-67xf-hhpq . The bundled 6.5.438 is newer; PicUplift additionally sets `isEvalSupported:false`, uses its own local module worker, renders only static pages, and does not execute PDF JavaScript or create annotation actions. This is not a guarantee against all future decoder vulnerabilities.
+
+The PDF-to-image page requires HTTP(S), including a local HTTP server, because browsers restrict file:// ES modules and module workers. Image-to-PDF and Markdown-to-PDF use classic pdf-lib and work from the complete local folder in a current desktop Chrome/Edge. Markdown is parsed into text-only blocks and rendered with installed system fonts; its PDF is made from page images, with no searchable/selectable text layer.

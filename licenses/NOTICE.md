@@ -37,3 +37,7 @@ Replace the corresponding local vendor file and verify decoding again. PicUplift
 ## PicUplift application files
 
 The original PicUplift HTML, CSS, JavaScript and documentation are provided under the MIT license in `../LICENSE.txt`. Third-party code retains the licenses above. Test images are not included in the website distribution.
+
+## Local PDF tools
+
+The three PDF tools additionally bundle pdf-lib and Mozilla PDF.js. See [PDF dependency notices](pdf-tools-NOTICE.md) for pinned versions, source links, licenses and third-party font/WASM notices.
