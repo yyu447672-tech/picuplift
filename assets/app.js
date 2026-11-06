@@ -70,6 +70,27 @@
   $('language-toggle').addEventListener('click', () => setLanguage(language === 'en' ? 'zh' : 'en'));
   if (!isToolPage) { setLanguage(language); return; }
 
+  const usageEvents = {
+    pic_files_selected: [],
+    pic_conversion_start: [],
+    pic_conversion_result: ['success', 'partial', 'failed', 'cancelled'],
+    pic_download_click: ['image', 'original', 'zip'],
+  };
+  const usageSource = batch => batch.every(item => item.isSample) ? 'sample' : batch.some(item => item.isSample) ? 'mixed' : 'user';
+  function trackUsage(name, source, status) {
+    // Only fixed enums reach the existing GA tag; local files never reach it.
+    // Blocked or broken analytics must not interrupt local image operations.
+    try {
+      if (location.protocol === 'file:' || typeof window.gtag !== 'function') return;
+      if (!Object.prototype.hasOwnProperty.call(usageEvents, name) || !['sample', 'user', 'mixed'].includes(source)) return;
+      const statuses = usageEvents[name];
+      if (statuses.length ? !statuses.includes(status) : status !== undefined) return;
+      const params = { send_to: 'G-41GRYMECDD', tool, source };
+      if (status !== undefined) params.status = status;
+      window.gtag('event', name, params);
+    } catch (_) { /* Analytics is optional. */ }
+  }
+
   function release(item) {
     if (item.output?.url) URL.revokeObjectURL(item.output.url);
     item.output = null;
@@ -170,6 +191,7 @@
     for (const file of files) items.push({ id: String(++nextId), file, status: 'queued', error: null, output: null, isSample });
     $('file-input').value = '';
     invalidate('added');
+    trackUsage('pic_files_selected', isSample ? 'sample' : 'user');
   }
   $('browse').addEventListener('click', () => $('file-input').click());
   $('file-input').addEventListener('change', event => addFiles(Array.from(event.target.files)));
@@ -212,6 +234,8 @@
     const used = new Set(); let finished = 0;
     $('progress').hidden = false; $('progress').max = items.length; $('progress').value = 0;
     renderAll();
+    const source = usageSource(items);
+    trackUsage('pic_conversion_start', source);
     try {
       for (const item of items) {
         if (job !== generation) return;
@@ -235,6 +259,8 @@
       }
     } finally {
       if (job === generation) {
+        const status = signal.aborted ? 'cancelled' : items.every(item => item.output) ? 'success' : items.some(item => item.output) ? 'partial' : 'failed';
+        trackUsage('pic_conversion_result', source, status);
         busy = false;
         showNotice(signal.aborted ? 'stopped' : 'completed');
         controller = null; renderAll();
@@ -253,8 +279,14 @@
     if (!button || busy || packing) return;
     const item = items.find(value => value.id === button.dataset.id);
     if (!item) return;
-    if (button.dataset.action === 'download' && item.output) download(item.output.blob, item.output.name);
-    if (button.dataset.action === 'original' && item.output) download(item.file, item.file.name);
+    if (button.dataset.action === 'download' && item.output) {
+      download(item.output.blob, item.output.name);
+      trackUsage('pic_download_click', usageSource([item]), 'image');
+    }
+    if (button.dataset.action === 'original' && item.output) {
+      download(item.file, item.file.name);
+      trackUsage('pic_download_click', usageSource([item]), 'original');
+    }
     if (button.dataset.action === 'remove') {
       release(item); items = items.filter(value => value !== item);
       rowNodes.get(item.id)?.remove(); rowNodes.delete(item.id); renderSummary();
@@ -274,7 +306,9 @@
         if (job === generation) showNotice('zipBusy', `${Math.round(metadata.percent)}%`);
       });
       if (job !== generation) return;
-      download(blob, `picuplift-${tool}.zip`); showNotice('zipDone');
+      download(blob, `picuplift-${tool}.zip`);
+      trackUsage('pic_download_click', usageSource(success), 'zip');
+      showNotice('zipDone');
     } catch (_) { if (job === generation) showNotice('zipError', '', true); }
     finally { if (job === generation) { packing = false; renderAll(); } }
   });
