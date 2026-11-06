@@ -1,10 +1,13 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const tool = document.body.dataset.tool;
+  const page = document.body.dataset.tool;
+  // The home page keeps its own copy and SEO while sharing the HEIC engine.
+  const tool = page === 'home' ? 'heic' : page;
+  const usageTool = page === 'home' ? 'heic-to-jpg' : tool;
   const isToolPage = ['heic', 'heicPng', 'webp', 'compress'].includes(tool);
   const isHeicTool = tool === 'heic' || tool === 'heicPng';
-  const config = PicCopy.pages[tool];
+  const config = PicCopy.pages[page];
   let language = new URLSearchParams(location.search).get('lang') === 'zh' ? 'zh' : 'en';
   let items = [], nextId = 0, busy = false, packing = false, controller;
   let notice = { key: '', detail: '', error: false };
@@ -46,6 +49,7 @@
     document.documentElement.lang = next === 'zh' ? 'zh-CN' : 'en';
     document.querySelectorAll('[data-copy]').forEach(node => { node.textContent = t(node.dataset.copy); });
     document.querySelectorAll('[data-copy-label]').forEach(node => { node.setAttribute('aria-label', t(node.dataset.copyLabel)); });
+    document.querySelectorAll('[data-copy-alt]').forEach(node => { node.setAttribute('alt', t(node.dataset.copyAlt)); });
     document.querySelectorAll('[data-page]').forEach(node => { node.textContent = config[language][node.dataset.page]; });
     document.querySelectorAll('[data-tool-name]').forEach(node => {
       node.textContent = t({ heic: 'navHeic', heicPng: 'navHeicPng', webp: 'navWebp', compress: 'navCompress' }[node.dataset.toolName]);
@@ -85,7 +89,7 @@
       if (!Object.prototype.hasOwnProperty.call(usageEvents, name) || !['sample', 'user', 'mixed'].includes(source)) return;
       const statuses = usageEvents[name];
       if (statuses.length ? !statuses.includes(status) : status !== undefined) return;
-      const params = { send_to: 'G-41GRYMECDD', tool, source };
+      const params = { send_to: 'G-41GRYMECDD', tool: usageTool, source };
       if (status !== undefined) params.status = status;
       window.gtag('event', name, params);
     } catch (_) { /* Analytics is optional. */ }
@@ -127,6 +131,7 @@
     $('summary').textContent = `${items.length} ${t('files')} · ${success.length} ${t('ready')}${failed ? ` · ${failed} ${t('errors')}` : ''}`;
     $('total-before').textContent = success.length ? bytes(success.reduce((sum, item) => sum + item.file.size, 0)) : '–';
     $('total-after').textContent = success.length ? bytes(success.reduce((sum, item) => sum + item.output.blob.size, 0)) : '–';
+    if ($('next-tools')) $('next-tools').hidden = busy || !success.length;
     updateControls();
   }
   const errorKey = code => ({ WRONG_FORMAT: 'errorWrong', HEIC_DECODE: 'errorHeic', HEIC_UNAVAILABLE: 'errorUnavailable', MEMORY: 'errorMemory', ENCODE: 'errorEncode', ENCODE_UNSUPPORTED: 'errorUnsupported' }[code] || 'errorDecode');

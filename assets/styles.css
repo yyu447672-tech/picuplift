@@ -42,3 +42,18 @@
 .guide-article .cta-line{margin-top:28px}
 .guide-article .cta-button{display:inline-block;min-height:46px;padding:12px 18px;border-radius:6px;background:var(--blue);color:#fff;font-size:14px;font-weight:600;text-decoration:none;line-height:1.7}
 @media(max-width:740px){.guide-article{margin-top:30px;margin-bottom:44px}.guide-article h2{font-size:23px}.guide-article .cta-button{width:100%;text-align:center}}
+
+/* Shared homepage converter and completion actions. */
+.home-converter{margin-bottom:32px}.home-converter>.section-heading{margin-bottom:18px}.drop-privacy{font-size:12px;line-height:1.75;color:var(--muted);margin:0 0 13px;overflow-wrap:anywhere}.next-tools{display:block;margin-top:22px;padding-top:18px;border-top:1px solid var(--line);font-size:13px}.next-tools>span{font-weight:600}.next-tool-links{display:flex;gap:8px 18px;flex-wrap:wrap;margin-top:7px}.next-tool-links a{color:var(--blue);text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}.next-tools .hint{font-weight:400}.home-converter .tool-workspace{scroll-margin-top:24px}
+
+/* Real local before/after samples; deferred images keep the converter first. */
+.example-pair { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.example-pair figure { margin:0; min-width:0; }
+.example-pair figcaption { font-size:.85rem; line-height:1.5; color:var(--muted,#526174); margin-bottom:10px; overflow-wrap:anywhere; }
+.example-pair img { display:block; width:100%; height:auto; border:1px solid var(--line,#dbe2eb); border-radius:12px; background-color:#f2f4f8; }
+.example-note { max-width:78ch; color:var(--muted,#526174); font-size:.875rem; line-height:1.7; }
+@media(max-width:560px) { .example-pair { grid-template-columns:1fr; gap:22px; } }
+
+.pdf-directory-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.pdf-directory-grid .tool-entry { min-width:0; }
+@media(max-width:768px) { .pdf-directory-grid { grid-template-columns:1fr; } }
