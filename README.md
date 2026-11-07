@@ -32,3 +32,31 @@ Four free, browser-local image tools: HEIC → JPG, HEIC → PNG, WebP → PNG, 
 - Coverage note: this baseline's Windows tutorial has no GA4 initializer; its visits are not reliably measured by the current page. The tool pages and Mac tutorial include the tag. No claim that every page is tracked is intended.
 
 See [third-party notices](licenses/NOTICE.md) and [application license](LICENSE.txt). Keep supplied license/source materials when redistributing.
+
+## 2026-11-07：WebP → JPG 与第四篇指南
+
+本轮基线：main `4eba0599bb976c294063a8e59924c05e7c092c8e`。新增 webp-to-jpg.html 与 how-to-convert-webp-to-jpg.html，网站共14页。已有12页的Title/Description/H1/Canonical、GA初始化/CSP哈希、旧文章和robots不变；首页Guides只追加第四项。
+
+WebP→JPG默认质量90、原尺寸100%，质量范围10–100；透明区域填白。80–90只是照片质量与体积的起点建议，不保证目标KB或无可见损失。只接受实际WebP内容；输出扩展名.jpg、MIME image/jpeg。动图取第一帧；颜色可能变化，原文件不改。可用真实照片示例、单张下载或成功结果ZIP；如果输出更大可另存原WebP。
+
+新工具沿用完整文件夹双击打开的方式，也可从线上网站使用。所有脚本和图片在本地，无npm安装或构建步骤。示例猫照片为CC0，出处见 licenses/webp-jpg-sample-NOTICE.md，不在运行时外联下载。网页语言切换不改文件名、输入或图片。
+
+| 文件 | 本轮改动与原因 |
+|---|---|
+| webp-to-jpg.html | 新JPG工具、质量/白底提示、示例、双语FAQ、OG和独立GA哈希。 |
+| how-to-convert-webp-to-jpg.html | 第四篇双语指南、内链、5条FAQ及对应结构化数据。 |
+| assets/core.js | 最小追加WebP→JPG输出和WebP输入校验，复用既有白底画布。 |
+| assets/app.js | 新模式初始化/事件/完成引导、按页读取文案与alt；保留原模式。 |
+| assets/local-assets.js | 只追加新WebP照片样例映射。 |
+| assets/content.js | 只新增pages.webpJpg和pages.guideWebpJpg；旧键和值零删除零修改。 |
+| assets/examples/webp-to-jpg-example-before.webp | 实际不透明WebP照片，关键词文件名。 |
+| assets/examples/webp-to-jpg-example-after.jpg | 通过新工具以90%质量生成的真实JPG。 |
+| assets/samples/picuplift-webp-jpg-sample.webp | 与before图片相同的原始示例字节。 |
+| assets/samples/webp-jpg.js | 相同示例的本地脚本包装，支持file://。 |
+| licenses/webp-jpg-sample-NOTICE.md | CC0样例照片的来源和许可说明。 |
+| index.html | Guides仅追加第四项，通过新文章的页内字典读取中英文。 |
+| sitemap.xml | 原12项不改，追加工具和文章两项至14。 |
+| llms.txt | 原文字不改，追加新工具和文章各一行。 |
+| README.md | 追加本节说明。 |
+
+站点包和替换包二选一，解压后上传内容到仓库根目录；不上传ZIP本身。报告、截图、测试资料单独交付，不上传站点仓库。包内保留本地图片、脚本和licenses的相对路径。

@@ -8,12 +8,14 @@
 - [HEIC to PNG Converter](https://picuplift.com/heic-to-png.html): Convert HEIC and HEIF images to PNG with lossless PNG encoding. Batch conversion and ZIP downloads.
 - [WebP to PNG Converter](https://picuplift.com/webp-to-png.html): Convert WebP images to PNG, keeping transparent backgrounds.
 - [Image Compressor](https://picuplift.com/compress-image.html): Compress JPG, PNG, and WebP images. Default quality is 80%. Compare real file sizes before downloading, or keep the original if the output grew.
+- [WebP to JPG Converter](https://picuplift.com/webp-to-jpg.html): Local batch conversion, quality 90 by default, white background for transparency, individual and ZIP downloads.
 
 ## Guides
 
 - [How to Convert HEIC to JPG on Windows 11](https://picuplift.com/how-to-convert-heic-to-jpg-on-windows-11.html): Three methods to convert HEIC to JPG on Windows 11, including PicUplift.
 - [How to Convert HEIC to JPG on Mac](https://picuplift.com/how-to-convert-heic-to-jpg-on-mac.html): Methods to convert HEIC to JPG on a Mac, including PicUplift.
 - [How to Convert HEIC to PNG](https://picuplift.com/how-to-convert-heic-to-png.html): Browser, Mac Preview and Windows Paint methods, with local-processing, codec and lossless-encoding limits explained.
+- [How to Convert WebP to JPG](https://picuplift.com/how-to-convert-webp-to-jpg.html): Browser, Mac Preview and Windows Paint methods with quality and transparency limits explained.
 
 ## Privacy
 - [Privacy Policy](https://picuplift.com/privacy-policy.html): What PicUplift collects (Google Analytics for visits and interactions only), what the Chrome extension does not collect, and how to contact the publisher.
