@@ -4,8 +4,8 @@
   const page = document.body.dataset.tool;
   // The home page keeps its own copy and SEO while sharing the HEIC engine.
   const tool = page === 'home' ? 'heic' : page;
-  const usageTool = page === 'home' ? 'heic-to-jpg' : tool;
-  const isToolPage = ['heic', 'heicPng', 'webp', 'compress'].includes(tool);
+  const usageTool = page === 'home' ? 'heic-to-jpg' : tool === 'webpJpg' ? 'webp-to-jpg' : tool;
+  const isToolPage = ['heic', 'heicPng', 'webp', 'webpJpg', 'compress'].includes(tool);
   const isHeicTool = tool === 'heic' || tool === 'heicPng';
   const config = PicCopy.pages[page];
   let language = new URLSearchParams(location.search).get('lang') === 'zh' ? 'zh' : 'en';
@@ -14,7 +14,7 @@
   let generation = 0;
   let sampleGeneration = 0, loadingSample = false;
   const rowNodes = new Map();
-  const t = key => PicCopy.common[language][key];
+  const t = key => config?.[language]?.[key] ?? PicCopy.common[language][key];
   const bytes = number => {
     if (number === undefined || number === null) return '–';
     const units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -51,6 +51,15 @@
     document.querySelectorAll('[data-copy-label]').forEach(node => { node.setAttribute('aria-label', t(node.dataset.copyLabel)); });
     document.querySelectorAll('[data-copy-alt]').forEach(node => { node.setAttribute('alt', t(node.dataset.copyAlt)); });
     document.querySelectorAll('[data-page]').forEach(node => { node.textContent = config[language][node.dataset.page]; });
+    document.querySelectorAll('[data-page-ref]').forEach(node => {
+      const [pageKey, copyKey] = node.dataset.pageRef.split('.');
+      const text = PicCopy.pages[pageKey]?.[language]?.[copyKey];
+      if (typeof text === 'string') node.textContent = text;
+    });
+    document.querySelectorAll('[data-page-alt]').forEach(node => {
+      const text = config?.[language]?.[node.dataset.pageAlt];
+      if (typeof text === 'string') node.setAttribute('alt', text);
+    });
     document.querySelectorAll('[data-tool-name]').forEach(node => {
       node.textContent = t({ heic: 'navHeic', heicPng: 'navHeicPng', webp: 'navWebp', compress: 'navCompress' }[node.dataset.toolName]);
     });
@@ -327,3 +336,4 @@
   window.addEventListener('pageshow', event => { if (event.persisted) { busy = packing = false; controller = null; renderAll(); showNotice('changed'); } });
   setLanguage(language);
 })();
+

@@ -3,7 +3,7 @@
   'use strict';
   const base = new URL('.', document.currentScript.src);
   const pending = new Map();
-  const samples = Object.freeze({ heic: 'samples/heic.js', webp: 'samples/webp.js', compress: 'samples/compress.js' });
+  const samples = Object.freeze({ heic: 'samples/heic.js', webp: 'samples/webp.js', compress: 'samples/compress.js', webpJpg: 'samples/webp-jpg.js' });
   const error = code => Object.assign(new Error(code), { code });
   function load(path) {
     const url = new URL(path, base).href;
@@ -44,3 +44,4 @@
   }
   globalThis.PicLocalAssets = Object.freeze({ sample, heic });
 })();
+
