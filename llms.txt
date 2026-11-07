@@ -13,8 +13,10 @@
 
 - [How to Convert HEIC to JPG on Windows 11](https://picuplift.com/how-to-convert-heic-to-jpg-on-windows-11.html): Three methods to convert HEIC to JPG on Windows 11, including PicUplift.
 - [How to Convert HEIC to JPG on Mac](https://picuplift.com/how-to-convert-heic-to-jpg-on-mac.html): Methods to convert HEIC to JPG on a Mac, including PicUplift.
+- [How to Convert HEIC to PNG](https://picuplift.com/how-to-convert-heic-to-png.html): Browser, Mac Preview and Windows Paint methods, with local-processing, codec and lossless-encoding limits explained.
 
 ## Privacy
+- [Privacy Policy](https://picuplift.com/privacy-policy.html): What PicUplift collects (Google Analytics for visits and interactions only), what the Chrome extension does not collect, and how to contact the publisher.
 
 - Images are processed locally in the browser tab and are never uploaded or saved by the site.
 - No signup and no account. PicUplift sets no artificial file-size or conversion-count caps; practical limits come from device memory, browser decoders, image dimensions, and ZIP format capacity.
