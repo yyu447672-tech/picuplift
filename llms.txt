@@ -35,3 +35,6 @@
 - [Image to PDF](https://picuplift.com/convert-image-to-pdf.html): Merge JPG and PNG pictures into one PDF locally, one image per page.
 - [PDF to Images](https://picuplift.com/convert-pdf-to-image.html): Render PDF pages to JPG or PNG locally, with individual and ZIP downloads. Requires HTTP(S), including a local web server. No OCR or editable document conversion.
 - [Markdown to PDF](https://picuplift.com/convert-markdown-to-pdf.html): Convert Markdown to an image-based PDF locally using system fonts. PDF text is not selectable or searchable. No remote images are fetched.
+
+- [SVG to PNG Converter](https://picuplift.com/svg-to-png.html): Render SVG locally with size controls, transparent/white/custom backgrounds, batches and ZIP downloads.
+- [How to Convert SVG to PNG](https://picuplift.com/how-to-convert-svg-to-png.html): Browser conversion, Inkscape and design-app export, with transparency and size guidance.
