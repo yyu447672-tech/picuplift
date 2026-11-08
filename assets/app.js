@@ -5,14 +5,14 @@
   // The home page keeps its own copy and SEO while sharing the HEIC engine.
   const tool = page === 'home' ? 'heic' : page;
   const usageTool = page === 'home' ? 'heic-to-jpg' : tool === 'webpJpg' ? 'webp-to-jpg' : tool;
-  const isToolPage = ['heic', 'heicPng', 'webp', 'webpJpg', 'compress'].includes(tool);
+  const isToolPage = ['heic', 'heicPng', 'webp', 'webpJpg', 'compress', 'svg'].includes(tool);
   const isHeicTool = tool === 'heic' || tool === 'heicPng';
   const config = PicCopy.pages[page];
   let language = new URLSearchParams(location.search).get('lang') === 'zh' ? 'zh' : 'en';
   let items = [], nextId = 0, busy = false, packing = false, controller;
   let notice = { key: '', detail: '', error: false };
   let generation = 0;
-  let sampleGeneration = 0, loadingSample = false;
+  let sampleGeneration = 0, loadingSample = false, loadingSvg = false;
   const rowNodes = new Map();
   const t = key => config?.[language]?.[key] ?? PicCopy.common[language][key];
   const bytes = number => {
@@ -115,16 +115,17 @@
       $('quality-value').textContent = png ? 'PNG' : `${$('quality').value}%`;
       $('png-quality-note').hidden = !png;
     }
-    $('scale-value').textContent = `${$('scale').value}%`;
+    if ($('scale')) $('scale-value').textContent = `${$('scale').value}%`;
+    if (tool === 'svg') $('svg-color').disabled = busy || packing || $('svg-background').value !== 'custom';
     if ($('white-note')) $('white-note').hidden = $('output-format').value !== 'jpeg';
   }
   function updateControls() {
-    $('settings').disabled = busy || packing;
+    $('settings').disabled = busy || packing || loadingSvg;
     $('file-input').disabled = busy || packing;
     $('browse').disabled = busy || packing;
     $('sample').disabled = busy || packing || loadingSample;
     $('clear').disabled = busy || packing || !items.length;
-    $('start').disabled = busy || packing || loadingSample || !items.length;
+    $('start').disabled = busy || packing || loadingSample || loadingSvg || !items.length;
     $('cancel').hidden = !busy;
     $('cancel').disabled = Boolean(controller?.signal.aborted);
     $('zip').disabled = busy || packing || loadingSample || !items.some(item => item.output);
@@ -143,7 +144,7 @@
     if ($('next-tools')) $('next-tools').hidden = busy || !success.length;
     updateControls();
   }
-  const errorKey = code => ({ WRONG_FORMAT: 'errorWrong', HEIC_DECODE: 'errorHeic', HEIC_UNAVAILABLE: 'errorUnavailable', MEMORY: 'errorMemory', ENCODE: 'errorEncode', ENCODE_UNSUPPORTED: 'errorUnsupported' }[code] || 'errorDecode');
+  const errorKey = code => ({ SVG_SIZE: 'errorSvgSize', SVG_EXTERNAL: 'errorSvgExternal', WRONG_FORMAT: 'errorWrong', HEIC_DECODE: 'errorHeic', HEIC_UNAVAILABLE: 'errorUnavailable', MEMORY: 'errorMemory', ENCODE: 'errorEncode', ENCODE_UNSUPPORTED: 'errorUnsupported' }[code] || 'errorDecode');
   function rowButton(text, action, item, className = 'row-button') {
     const button = element('button', text, className);
     button.type = 'button'; button.dataset.action = action; button.dataset.id = item.id;
@@ -172,6 +173,7 @@
       const change = PicCore.sizeChange(item.file.size, item.output.blob.size);
       const label = item.output.blob.size === item.file.size ? t('same') : `${change === 0 ? '<1' : Math.abs(change)}% ${t(item.output.blob.size < item.file.size ? 'saved' : 'grew')}`;
       comparison.append(element('span', label, `size-change ${change < 0 ? 'grew' : ''}`)); row.append(comparison);
+      if (item.output.fallback) row.append(element('p', t('fallback'), 'row-note'));
       if (item.output.frameOnly) row.append(element('p', t('frameNote'), 'row-note'));
       if (item.output.blob.size > item.file.size) row.append(element('p', t('largerNote'), 'row-note'));
     } else if (item.status === 'failed') row.append(element('p', t(errorKey(item.error)), 'row-error'));
@@ -195,6 +197,27 @@
     renderAll(); showNotice(key);
     $('progress').hidden = true;
   }
+  let svgBase = { width: 512, height: 512 };
+  let svgSelection = 0;
+  async function svgDefaults(file) {
+    const request = ++svgSelection;
+    loadingSvg = true;
+    try {
+      const size = PicSvg.inspect(await file.text());
+      if (request !== svgSelection || busy) return;
+      svgBase = size;
+      $('svg-width').value = size.width; $('svg-height').value = size.height;
+      $('svg-default').dataset.copy = size.fallback ? 'fallback' : 'sizeDefault';
+      $('svg-default').textContent = t($('svg-default').dataset.copy);
+    } catch (_) { /* Invalid files receive a per-file error during conversion. */ }
+    finally { if (request === svgSelection) { loadingSvg = false; updateControls(); } }
+  }
+  if (tool === 'svg') document.querySelectorAll('[data-svg-scale]').forEach(button => button.addEventListener('click', () => {
+    if (busy || packing) return;
+    $('svg-width').value = svgBase.width * Number(button.dataset.svgScale);
+    $('svg-height').value = svgBase.height * Number(button.dataset.svgScale);
+    invalidate('changed');
+  }));
   function addFiles(files, isSample = false) {
     if (busy || packing || !files.length) return;
     if (!isSample) { sampleGeneration++; loadingSample = false; }
@@ -204,6 +227,7 @@
     items = items.filter(item => !item.isSample);
     for (const file of files) items.push({ id: String(++nextId), file, status: 'queued', error: null, output: null, isSample });
     $('file-input').value = '';
+    if (tool === 'svg') svgDefaults(items[0].file);
     invalidate('added');
     trackUsage('pic_files_selected', isSample ? 'sample' : 'user');
   }
@@ -234,6 +258,7 @@
   $('clear').addEventListener('click', () => {
     if (busy || packing) return;
     sampleGeneration++; loadingSample = false;
+    svgSelection++; loadingSvg = false;
     items.forEach(release); items = []; renderAll(); showNotice('cleared'); $('progress').hidden = true;
   });
   $('cancel').addEventListener('click', () => { controller?.abort(); updateControls(); });
@@ -244,7 +269,7 @@
     const job = ++generation;
     busy = true; controller = new AbortController();
     const signal = controller.signal;
-    const settings = { quality: Number($('quality')?.value || 100), scale: Number($('scale').value), format: $('output-format')?.value || 'auto' };
+    const settings = { quality: Number($('quality')?.value || 100), scale: Number($('scale')?.value || 100), svgWidth: $('svg-width')?.value, svgHeight: $('svg-height')?.value, svgBackground: $('svg-background')?.value, svgColor: $('svg-color')?.value, format: $('output-format')?.value || 'auto' };
     const used = new Set(); let finished = 0;
     $('progress').hidden = false; $('progress').max = items.length; $('progress').value = 0;
     renderAll();
@@ -328,6 +353,7 @@
   });
   window.addEventListener('pagehide', () => {
     generation++;
+    svgSelection++; loadingSvg = false;
     sampleGeneration++; loadingSample = false;
     controller?.abort(); items.forEach(release);
     // Never restore stale, revoked output URLs from the back/forward cache.

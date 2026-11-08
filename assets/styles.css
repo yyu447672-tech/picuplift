@@ -57,3 +57,6 @@
 .pdf-directory-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
 .pdf-directory-grid .tool-entry { min-width:0; }
 @media(max-width:768px) { .pdf-directory-grid { grid-template-columns:1fr; } }
+
+/* SVG export controls: scoped to the new converter. */
+body[data-tool="svg"] .svg-dimensions {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:18px 0 12px} body[data-tool="svg"] .svg-dimensions label {display:grid;gap:8px;font-weight:600} body[data-tool="svg"] .svg-dimensions input,body[data-tool="svg"] select {width:100%;min-width:0;box-sizing:border-box;padding:12px;font:inherit;border:1px solid #7d8794;border-radius:4px;background:#fff;color:#18212c} body[data-tool="svg"] .svg-scales {display:flex;gap:10px;flex-wrap:wrap} body[data-tool="svg"] .setting>label {display:block;margin:12px 0 8px} body[data-tool="svg"] input[type="color"] {height:44px;width:72px} body[data-tool="svg"] .example-pair img,body[data-tool="guideSvg"] .example-pair img {background-color:#e7ecf0} body[data-tool="svg"] .intro h1 {font-size:clamp(2.5rem,5vw,4.5rem)}

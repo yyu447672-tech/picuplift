@@ -102,6 +102,7 @@
     } finally { worker?.terminate(); URL.revokeObjectURL(workerUrl); }
   }
   async function convert(file, tool, settings, signal) {
+    if (tool === 'svg') return globalThis.PicSvg.convert(file, settings, signal);
     const header = new Uint8Array(await file.slice(0, 65536).arrayBuffer());
     const sourceFormat = sniff(header);
     const allowed = (tool === 'heic' || tool === 'heicPng') ? ['heic'] : (tool === 'webp' || tool === 'webpJpg') ? ['webp'] : ['jpeg', 'png', 'webp'];
