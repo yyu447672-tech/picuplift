@@ -10,6 +10,14 @@
 - [Image Compressor](https://picuplift.com/compress-image.html): Compress JPG, PNG, and WebP images. Default quality is 80%. Compare real file sizes before downloading, or keep the original if the output grew.
 - [WebP to JPG Converter](https://picuplift.com/webp-to-jpg.html): Local batch conversion, quality 90 by default, white background for transparency, individual and ZIP downloads.
 
+- [Compress to 200KB](https://picuplift.com/compress-image-to-200kb.html): Compress images toward a 200KB target.
+- [Compress JPEG to 100KB](https://picuplift.com/compress-jpeg-to-100kb.html): Compress JPEG images toward a 100KB target.
+- [Compress Images for Instagram](https://picuplift.com/how-to-compress-images-for-instagram.html): Prepare images for Instagram.
+- [Convert HEIC to JPG on iPhone](https://picuplift.com/how-to-convert-heic-to-jpg-on-iphone.html): Convert photos using iPhone tools.
+- [WebP to PNG in Bulk](https://picuplift.com/webp-to-png-bulk.html): Convert multiple WebP files to PNG locally.
+- [AVIF to JPG](https://picuplift.com/avif-to-jpg.html): Convert AVIF to JPG locally.
+- [Image to Text](https://picuplift.com/image-to-text.html): Read printed English locally with OCR.
+
 ## Guides
 
 - [How to Convert HEIC to JPG on Windows 11](https://picuplift.com/how-to-convert-heic-to-jpg-on-windows-11.html): Three methods to convert HEIC to JPG on Windows 11, including PicUplift.
@@ -28,7 +36,7 @@
 
 ## Pricing
 
-- All four tools are free, with no registration, conversion quotas, or advertisements. There is no paid plan, trial, or subscription.
+- All tools are free, with no registration, conversion quotas, or advertisements. There is no paid plan, trial, or subscription.
 
 ## PDF tools
 
