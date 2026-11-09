@@ -1,0 +1,6 @@
+PicUplift local OCR dependencies
+
+Tesseract.js 7.0.0, Apache License 2.0: https://github.com/naptha/tesseract.js
+Tesseract.js-core 7.0.0, Apache License 2.0: https://github.com/naptha/tesseract.js-core
+English traineddata, @tesseract.js-data/eng 1.0.0, Apache License 2.0: https://github.com/naptha/tessdata
+The language data is the upstream integerized English tessdata_best model. License texts and bundled component notices are supplied in this directory.
