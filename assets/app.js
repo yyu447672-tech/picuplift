@@ -4,9 +4,9 @@
   const page = document.body.dataset.tool;
   // The home page keeps its own copy and SEO while sharing the HEIC engine.
   const tool = page === 'home' ? 'heic' : ['compress200kb', 'compress100kb'].includes(page) ? 'compress' : page;
-  const usageTool = ['compress200kb', 'compress100kb'].includes(page) ? configFileName(page) : page === 'home' ? 'heic-to-jpg' : tool === 'webpJpg' ? 'webp-to-jpg' : tool;
+  const usageTool = ['compress200kb', 'compress100kb'].includes(page) ? configFileName(page) : page === 'home' ? 'heic-to-jpg' : tool === 'webpJpg' ? 'webp-to-jpg' : tool === 'webpBulk' ? 'webp-to-png-bulk' : tool === 'avif' ? 'avif-to-jpg' : tool;
   function configFileName(key) { return PicCopy.pages[key].file.replace('.html', ''); }
-  const isToolPage = ['heic', 'heicPng', 'webp', 'webpJpg', 'compress', 'svg'].includes(tool);
+  const isToolPage = ['heic', 'heicPng', 'webp', 'webpJpg', 'webpBulk', 'avif', 'compress', 'svg'].includes(tool);
   const isHeicTool = tool === 'heic' || tool === 'heicPng';
   const config = PicCopy.pages[page];
   let language = new URLSearchParams(location.search).get('lang') === 'zh' ? 'zh' : 'en';
@@ -62,7 +62,7 @@
       if (typeof text === 'string') node.setAttribute('alt', text);
     });
     document.querySelectorAll('[data-tool-name]').forEach(node => {
-      node.textContent = t({ heic: 'navHeic', heicPng: 'navHeicPng', webp: 'navWebp', compress: 'navCompress' }[node.dataset.toolName]);
+      node.textContent = t({ heic: 'navHeic', heicPng: 'navHeicPng', webp: 'navWebp', webpBulk: 'navBulk', avif: 'navAvif', ocr: 'navOcr', compress: 'navCompress' }[node.dataset.toolName]);
     });
     document.querySelectorAll('[data-tool-short]').forEach(node => { node.textContent = PicCopy.pages[node.dataset.toolShort][language].short; });
     document.querySelectorAll('[data-step-title]').forEach(node => { node.textContent = config[language].steps[Number(node.dataset.stepTitle)][0]; });
@@ -159,7 +159,7 @@
     if ($('next-tools')) $('next-tools').hidden = busy || !success.length;
     updateControls();
   }
-  const errorKey = code => ({ SVG_SIZE: 'errorSvgSize', SVG_EXTERNAL: 'errorSvgExternal', WRONG_FORMAT: 'errorWrong', HEIC_DECODE: 'errorHeic', HEIC_UNAVAILABLE: 'errorUnavailable', MEMORY: 'errorMemory', ENCODE: 'errorEncode', ENCODE_UNSUPPORTED: 'errorUnsupported' }[code] || 'errorDecode');
+  const errorKey = code => ({ SVG_SIZE: 'errorSvgSize', SVG_EXTERNAL: 'errorSvgExternal', WRONG_FORMAT: 'errorWrong', AVIF_DECODE: 'errorAvif', HEIC_DECODE: 'errorHeic', HEIC_UNAVAILABLE: 'errorUnavailable', MEMORY: 'errorMemory', ENCODE: 'errorEncode', ENCODE_UNSUPPORTED: 'errorUnsupported' }[code] || 'errorDecode');
   function rowButton(text, action, item, className = 'row-button') {
     const button = element('button', text, className);
     button.type = 'button'; button.dataset.action = action; button.dataset.id = item.id;
@@ -259,7 +259,7 @@
     const request = ++sampleGeneration;
     loadingSample = true; updateControls(); showNotice('sampleLoading');
     try {
-      const file = await PicLocalAssets.sample(isHeicTool ? 'heic' : tool);
+      const file = await PicLocalAssets.sample(isHeicTool ? 'heic' : tool === 'webpBulk' ? 'webp' : tool);
       if (request !== sampleGeneration) return;
       addFiles([file], true); showNotice('sampleAdded');
     } catch (_) { if (request === sampleGeneration) showNotice('sampleError', '', true); }

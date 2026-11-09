@@ -10,14 +10,15 @@
       const brands = [ascii(bytes, 8, 4)];
       const boxSize = ((bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3]) >>> 0;
       for (let i = 16; i + 4 <= Math.min(bytes.length, boxSize); i += 4) brands.push(ascii(bytes, i, 4));
+      if (brands.some(brand => ['avif', 'avis'].includes(brand))) return 'avif';
       if (brands.some(brand => ['heic', 'heix', 'hevc', 'hevx', 'heim', 'heis', 'hevm', 'hevs'].includes(brand))) return 'heic';
     }
     return null;
   }
   function outputType(tool, source, choice = 'auto') {
-    if (tool === 'heic' || tool === 'webpJpg') return 'image/jpeg';
+    if (tool === 'heic' || tool === 'webpJpg' || tool === 'avif') return 'image/jpeg';
     if (tool === 'heicPng') return 'image/png';
-    if (tool === 'webp') return 'image/png';
+    if (tool === 'webp' || tool === 'webpBulk') return 'image/png';
     if (choice !== 'auto') return `image/${choice}`;
     return source === 'jpeg' ? 'image/jpeg' : 'image/webp';
   }
@@ -36,6 +37,12 @@
   }
   function isAnimated(bytes, format) {
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    if (format === 'avif' && ascii(bytes, 4, 4) === 'ftyp') {
+      const size = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(0);
+      for (let i = 8; i + 4 <= Math.min(size, bytes.length); i += 4) {
+        if (i !== 12 && ascii(bytes, i, 4) === 'avis') return true;
+      }
+    }
     if (format === 'webp') {
       for (let i = 12; i + 8 <= bytes.length;) {
         const name = ascii(bytes, i, 4), size = view.getUint32(i + 4, true);
@@ -134,7 +141,7 @@
     if (tool === 'svg') return globalThis.PicSvg.convert(file, settings, signal);
     const header = new Uint8Array(await file.slice(0, 65536).arrayBuffer());
     const sourceFormat = sniff(header);
-    const allowed = (tool === 'heic' || tool === 'heicPng') ? ['heic'] : (tool === 'webp' || tool === 'webpJpg') ? ['webp'] : ['jpeg', 'png', 'webp'];
+    const allowed = (tool === 'heic' || tool === 'heicPng') ? ['heic'] : (tool === 'webp' || tool === 'webpJpg' || tool === 'webpBulk') ? ['webp'] : tool === 'avif' ? ['avif'] : ['jpeg', 'png', 'webp'];
     if (!allowed.includes(sourceFormat)) throw codedError('WRONG_FORMAT');
     if (signal?.aborted) throw codedError('CANCELLED');
     let source, bitmap, sourceWidth, sourceHeight, frameOnly = isAnimated(header, sourceFormat);
@@ -154,7 +161,8 @@
       } else {
         // createImageBitmap uses the first frame of an animated source, and
         // applies EXIF orientation by default. Never capture a moving <img>.
-        bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+        try { bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+        catch (error) { if (sourceFormat === 'avif' && !(error instanceof RangeError)) throw codedError('AVIF_DECODE'); throw error; }
         source = bitmap; sourceWidth = bitmap.width; sourceHeight = bitmap.height;
       }
       if (signal?.aborted) throw codedError('CANCELLED');

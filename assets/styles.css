@@ -68,3 +68,11 @@ body[data-tool="svg"] .svg-dimensions {display:grid;grid-template-columns:repeat
 .site-footer:has(.batch6-footer){flex-wrap:wrap}.batch6-footer{flex-basis:100%;justify-content:flex-start}
 
 .batch6-page .site-footer .brand{display:inline-flex;align-items:center;min-height:44px}
+
+/* OCR result fields */
+.ocr-result{padding:20px 0;border-top:1px solid var(--line);min-width:0}
+.ocr-result-name{font-size:13px;line-height:1.5;overflow-wrap:anywhere;margin:0}
+.ocr-result-status{font-size:12px;color:var(--muted);margin:8px 0}
+.ocr-text{display:block;box-sizing:border-box;width:100%;min-height:150px;resize:vertical;border:1px solid #c8d0dd;border-radius:4px;background:var(--paper);color:var(--ink);padding:12px;font:inherit;line-height:1.6}
+.ocr-result-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.ocr-result-actions button{min-height:44px}
