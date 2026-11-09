@@ -59,6 +59,35 @@
   const canZip = sizes => sizes.length < 65535 && sizes.every(size => size < 0xffffffff) && sizes.reduce((sum, size) => sum + size + 4096, 22) < 0xffffffff;
   const codedError = code => Object.assign(new Error(code), { code });
 
+  // Target mode has a 40% quality floor and at most seven encodes per size.
+  const targetType = (source, choice) => source === 'png' || choice !== 'webp' ? 'image/jpeg' : 'image/webp';
+  async function searchTarget(encode, targetBytes, signal) {
+    let smallest, encodes = 0;
+    const attempt = async (quality, scale) => {
+      if (signal?.aborted) throw codedError('CANCELLED');
+      const result = await encode(quality, scale);
+      if (signal?.aborted) throw codedError('CANCELLED');
+      encodes++;
+      if (!smallest || result.blob.size < smallest.blob.size) smallest = result;
+      return result;
+    };
+    for (const scale of [100, 90, 80, 70, 60, 50]) {
+      const high = await attempt(100, scale);
+      if (high.blob.size <= targetBytes) return { ...high, reached: true, encodes };
+      let best = await attempt(40, scale);
+      if (best.blob.size > targetBytes) continue;
+      let low = 40, upper = 100;
+      for (let count = 2; count < 7 && upper - low > 1; count++) {
+        const quality = Math.floor((low + upper) / 2);
+        const candidate = await attempt(quality, scale);
+        if (candidate.blob.size <= targetBytes) { best = candidate; low = quality; }
+        else upper = quality;
+      }
+      return { ...best, reached: true, encodes };
+    }
+    return { ...smallest, reached: false, encodes };
+  }
+
   // Executed only inside a temporary Blob worker, following the local WASM bundle.
   function heicWorkerMain() {
     self.onmessage = async ({ data: buffer }) => {
@@ -129,18 +158,25 @@
         source = bitmap; sourceWidth = bitmap.width; sourceHeight = bitmap.height;
       }
       if (signal?.aborted) throw codedError('CANCELLED');
-      const { width, height } = dimensions(sourceWidth, sourceHeight, settings.scale);
-      canvas.width = width; canvas.height = height;
-      const context = canvas.getContext('2d');
-      if (!context) throw codedError('MEMORY');
-      const type = outputType(tool, sourceFormat, settings.format);
-      if (type === 'image/jpeg') { context.fillStyle = '#ffffff'; context.fillRect(0, 0, width, height); }
-      context.imageSmoothingEnabled = true; context.imageSmoothingQuality = 'high';
-      context.drawImage(source, 0, 0, width, height);
-      const blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(codedError('ENCODE')), type, settings.quality / 100));
-      if (blob.type !== type) throw codedError('ENCODE_UNSUPPORTED');
-      if (signal?.aborted) throw codedError('CANCELLED');
-      return { blob, width, height, sourceWidth, sourceHeight, sourceFormat, frameOnly };
+      const targetMode = tool === 'compress' && settings.mode === 'target';
+      const type = targetMode ? targetType(sourceFormat, settings.format) : outputType(tool, sourceFormat, settings.format);
+      const encode = async (quality, scale = 100) => {
+        const base = dimensions(sourceWidth, sourceHeight, settings.scale);
+        const width = Math.max(1, Math.round(base.width * scale / 100)), height = Math.max(1, Math.round(base.height * scale / 100));
+        canvas.width = width; canvas.height = height;
+        const context = canvas.getContext('2d');
+        if (!context) throw codedError('MEMORY');
+        if (type === 'image/jpeg') { context.fillStyle = '#ffffff'; context.fillRect(0, 0, width, height); }
+        context.imageSmoothingEnabled = true; context.imageSmoothingQuality = 'high';
+        context.drawImage(source, 0, 0, width, height);
+        const blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(codedError('ENCODE')), type, quality / 100));
+        if (blob.type !== type) throw codedError('ENCODE_UNSUPPORTED');
+        if (signal?.aborted) throw codedError('CANCELLED');
+        return { blob, width, height, quality, scale };
+      };
+      const targetKB = Math.min(5000, Math.max(10, Math.round(Number(settings.targetKB) || 200)));
+      const output = targetMode ? await searchTarget(encode, targetKB * 1024, signal) : await encode(settings.quality);
+      return { ...output, sourceWidth, sourceHeight, sourceFormat, frameOnly, ...(targetMode ? { targetKB } : {}) };
     } catch (error) {
       if (error.code) throw error;
       throw codedError(error instanceof RangeError ? 'MEMORY' : 'DECODE');
@@ -150,6 +186,6 @@
       if (heicCanvas) heicCanvas.width = heicCanvas.height = 1;
     }
   }
-  globalThis.PicCore = Object.freeze({ sniff, outputType, dimensions, uniqueName, isAnimated, sizeChange, canZip, convert });
+  globalThis.PicCore = Object.freeze({ sniff, outputType, dimensions, uniqueName, isAnimated, sizeChange, canZip, searchTarget, targetType, convert });
 })();
 

@@ -3,8 +3,9 @@
   const $ = id => document.getElementById(id);
   const page = document.body.dataset.tool;
   // The home page keeps its own copy and SEO while sharing the HEIC engine.
-  const tool = page === 'home' ? 'heic' : page;
-  const usageTool = page === 'home' ? 'heic-to-jpg' : tool === 'webpJpg' ? 'webp-to-jpg' : tool;
+  const tool = page === 'home' ? 'heic' : ['compress200kb', 'compress100kb'].includes(page) ? 'compress' : page;
+  const usageTool = ['compress200kb', 'compress100kb'].includes(page) ? configFileName(page) : page === 'home' ? 'heic-to-jpg' : tool === 'webpJpg' ? 'webp-to-jpg' : tool;
+  function configFileName(key) { return PicCopy.pages[key].file.replace('.html', ''); }
   const isToolPage = ['heic', 'heicPng', 'webp', 'webpJpg', 'compress', 'svg'].includes(tool);
   const isHeicTool = tool === 'heic' || tool === 'heicPng';
   const config = PicCopy.pages[page];
@@ -109,6 +110,20 @@
     item.output = null;
   }
   function updateSettings() {
+    const target = $('compression-mode')?.value === 'target';
+    if ($('target-controls')) {
+      $('target-controls').hidden = !target;
+      $('quality-setting').hidden = target;
+      $('target-note').hidden = !target;
+      $('auto-note').hidden = target;
+      for (const option of $('output-format').options) {
+        if (option.value === 'auto' || option.value === 'png') option.disabled = target;
+        if (option.value === 'auto') option.hidden = target;
+        if (option.value === 'png') option.textContent = target ? t('targetFormat') : 'PNG';
+      }
+      if (target && ['auto', 'png'].includes($('output-format').value)) $('output-format').value = 'jpeg';
+      document.querySelectorAll('[data-target-kb]').forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.targetKb) === Number($('target-kb').value))));
+    }
     if ($('quality')) {
       const png = tool === 'compress' && $('output-format').value === 'png';
       $('quality').disabled = png;
@@ -173,6 +188,12 @@
       const change = PicCore.sizeChange(item.file.size, item.output.blob.size);
       const label = item.output.blob.size === item.file.size ? t('same') : `${change === 0 ? '<1' : Math.abs(change)}% ${t(item.output.blob.size < item.file.size ? 'saved' : 'grew')}`;
       comparison.append(element('span', label, `size-change ${change < 0 ? 'grew' : ''}`)); row.append(comparison);
+      if (item.output.targetKB) {
+        const output = item.output;
+        const values = { target: `${output.targetKB} KB`, size: `${(output.blob.size / 1024).toFixed(2)} KB`, quality: output.quality, w: output.width, h: output.height };
+        const message = output.reached ? `${t('targetReached')} · ${t('targetSizeLabel')}: ${values.target} · ${values.size} · ${values.quality}% · ${values.w}×${values.h} px` : t('targetMissed').replace(/\{(\w+)\}/g, (_, key) => values[key]);
+        row.append(element('p', message, output.reached ? 'row-note target-result' : 'row-error target-result'));
+      }
       if (item.output.fallback) row.append(element('p', t('fallback'), 'row-note'));
       if (item.output.frameOnly) row.append(element('p', t('frameNote'), 'row-note'));
       if (item.output.blob.size > item.file.size) row.append(element('p', t('largerNote'), 'row-note'));
@@ -254,6 +275,21 @@
   // Keep an accidental drop outside the panel from navigating away with files.
   window.addEventListener('dragover', event => event.preventDefault());
   window.addEventListener('drop', event => event.preventDefault());
+  function clampTarget() {
+    if (!$('target-kb')) return;
+    const raw = Number($('target-kb').value);
+    const value = Math.min(5000, Math.max(10, Math.round(Number.isFinite(raw) ? raw : 200)));
+    $('target-kb').value = value;
+    $('target-validation').textContent = raw !== value ? t('targetRange') : '';
+    updateSettings();
+  }
+  $('target-kb')?.addEventListener('change', clampTarget);
+  document.querySelectorAll('[data-target-kb]').forEach(button => button.addEventListener('click', () => {
+    if (busy || packing) return;
+    $('target-kb').value = button.dataset.targetKb;
+    $('target-validation').textContent = '';
+    invalidate('changed');
+  }));
   $('settings').addEventListener('input', () => { if (!busy && !packing) invalidate('changed'); });
   $('clear').addEventListener('click', () => {
     if (busy || packing) return;
@@ -265,11 +301,12 @@
   $('start').addEventListener('click', async () => {
     if (busy || packing) return;
     if (!items.length) { showNotice('noFiles', '', true); return; }
+    clampTarget();
     invalidate('processing');
     const job = ++generation;
     busy = true; controller = new AbortController();
     const signal = controller.signal;
-    const settings = { quality: Number($('quality')?.value || 100), scale: Number($('scale')?.value || 100), svgWidth: $('svg-width')?.value, svgHeight: $('svg-height')?.value, svgBackground: $('svg-background')?.value, svgColor: $('svg-color')?.value, format: $('output-format')?.value || 'auto' };
+    const settings = { mode: $('compression-mode')?.value || 'quality', targetKB: Number($('target-kb')?.value || 200), quality: Number($('quality')?.value || 100), scale: Number($('scale')?.value || 100), svgWidth: $('svg-width')?.value, svgHeight: $('svg-height')?.value, svgBackground: $('svg-background')?.value, svgColor: $('svg-color')?.value, format: $('output-format')?.value || 'auto' };
     const used = new Set(); let finished = 0;
     $('progress').hidden = false; $('progress').max = items.length; $('progress').value = 0;
     renderAll();
