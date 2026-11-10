@@ -19,6 +19,7 @@
 - [Image to Text](https://picuplift.com/image-to-text.html): Read printed English locally with OCR.
 - [PNG to JPG Converter](https://picuplift.com/png-to-jpg.html): Convert PNG images to JPG locally, quality 90 by default, white background for transparency.
 - [JPG to PNG Converter](https://picuplift.com/jpg-to-png.html): Convert JPG images to PNG with lossless PNG encoding. Batch conversion and ZIP downloads.
+- [PNG & JPG to WebP Converter](https://picuplift.com/to-webp.html): Convert PNG and JPG images to WebP locally, quality 90 by default, transparency kept. Batch conversion and ZIP downloads.
 
 ## Guides
 
