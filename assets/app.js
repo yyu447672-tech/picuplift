@@ -4,9 +4,9 @@
   const page = document.body.dataset.tool;
   // The home page keeps its own copy and SEO while sharing the HEIC engine.
   const tool = page === 'home' ? 'heic' : ['compress200kb', 'compress100kb'].includes(page) ? 'compress' : page;
-  const usageTool = ['compress200kb', 'compress100kb'].includes(page) ? configFileName(page) : page === 'home' ? 'heic-to-jpg' : tool === 'webpJpg' ? 'webp-to-jpg' : tool === 'webpBulk' ? 'webp-to-png-bulk' : tool === 'avif' ? 'avif-to-jpg' : tool;
+  const usageTool = ['compress200kb', 'compress100kb'].includes(page) ? configFileName(page) : page === 'home' ? 'heic-to-jpg' : tool === 'webpJpg' ? 'webp-to-jpg' : tool === 'webpBulk' ? 'webp-to-png-bulk' : tool === 'avif' ? 'avif-to-jpg' : tool === 'pngJpg' ? 'png-to-jpg' : tool === 'jpgPng' ? 'jpg-to-png' : tool;
   function configFileName(key) { return PicCopy.pages[key].file.replace('.html', ''); }
-  const isToolPage = ['heic', 'heicPng', 'webp', 'webpJpg', 'webpBulk', 'avif', 'compress', 'svg'].includes(tool);
+  const isToolPage = ['heic', 'heicPng', 'webp', 'webpJpg', 'webpBulk', 'avif', 'pngJpg', 'jpgPng', 'compress', 'svg'].includes(tool);
   const isHeicTool = tool === 'heic' || tool === 'heicPng';
   const config = PicCopy.pages[page];
   let language = new URLSearchParams(location.search).get('lang') === 'zh' ? 'zh' : 'en';
@@ -51,7 +51,7 @@
     document.querySelectorAll('[data-copy]').forEach(node => { node.textContent = t(node.dataset.copy); });
     document.querySelectorAll('[data-copy-label]').forEach(node => { node.setAttribute('aria-label', t(node.dataset.copyLabel)); });
     document.querySelectorAll('[data-copy-alt]').forEach(node => { node.setAttribute('alt', t(node.dataset.copyAlt)); });
-    document.querySelectorAll('[data-page]').forEach(node => { node.textContent = config[language][node.dataset.page]; });
+    document.querySelectorAll('[data-page]').forEach(node => { const text = config?.[language]?.[node.dataset.page]; if (typeof text === 'string') node.textContent = text; });
     document.querySelectorAll('[data-page-ref]').forEach(node => {
       const [pageKey, copyKey] = node.dataset.pageRef.split('.');
       const text = PicCopy.pages[pageKey]?.[language]?.[copyKey];
@@ -62,7 +62,7 @@
       if (typeof text === 'string') node.setAttribute('alt', text);
     });
     document.querySelectorAll('[data-tool-name]').forEach(node => {
-      node.textContent = t({ heic: 'navHeic', heicPng: 'navHeicPng', webp: 'navWebp', webpBulk: 'navBulk', avif: 'navAvif', ocr: 'navOcr', compress: 'navCompress' }[node.dataset.toolName]);
+      node.textContent = t({ heic: 'navHeic', heicPng: 'navHeicPng', webp: 'navWebp', webpBulk: 'navBulk', avif: 'navAvif', ocr: 'navOcr', pngJpg: 'navPngJpg', jpgPng: 'navJpgPng', webpJpg: 'navWebpJpg', svg: 'navSvg', compress: 'navCompress' }[node.dataset.toolName]);
     });
     document.querySelectorAll('[data-tool-short]').forEach(node => { node.textContent = PicCopy.pages[node.dataset.toolShort][language].short; });
     document.querySelectorAll('[data-step-title]').forEach(node => { node.textContent = config[language].steps[Number(node.dataset.stepTitle)][0]; });
