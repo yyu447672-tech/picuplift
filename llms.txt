@@ -17,6 +17,8 @@
 - [WebP to PNG in Bulk](https://picuplift.com/webp-to-png-bulk.html): Convert multiple WebP files to PNG locally.
 - [AVIF to JPG](https://picuplift.com/avif-to-jpg.html): Convert AVIF to JPG locally.
 - [Image to Text](https://picuplift.com/image-to-text.html): Read printed English locally with OCR.
+- [PNG to JPG Converter](https://picuplift.com/png-to-jpg.html): Convert PNG images to JPG locally, quality 90 by default, white background for transparency.
+- [JPG to PNG Converter](https://picuplift.com/jpg-to-png.html): Convert JPG images to PNG with lossless PNG encoding. Batch conversion and ZIP downloads.
 
 ## Guides
 
