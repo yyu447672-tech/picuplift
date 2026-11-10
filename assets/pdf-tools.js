@@ -148,6 +148,7 @@
     if($('zip')){$('zip').disabled=busy||packing||!outputs.length;$('zip').textContent=t(packing?'zipBusy':'zip');}
   }
   function render(){
+    if($('next-tools'))$('next-tools').hidden=busy||!outputs.length;
     $('file-count').textContent=String(outputs.length||files.length);$('empty').hidden=!!rows.length||!!outputs.length;
     const list=$('file-list');list.replaceChildren();
     for(const item of rows){

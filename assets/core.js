@@ -19,6 +19,7 @@
     if (tool === 'heic' || tool === 'webpJpg' || tool === 'avif' || tool === 'pngJpg') return 'image/jpeg';
     if (tool === 'heicPng') return 'image/png';
     if (tool === 'webp' || tool === 'webpBulk' || tool === 'jpgPng') return 'image/png';
+    if (tool === 'toWebp') return 'image/webp';
     if (choice !== 'auto') return `image/${choice}`;
     return source === 'jpeg' ? 'image/jpeg' : 'image/webp';
   }
@@ -141,7 +142,7 @@
     if (tool === 'svg') return globalThis.PicSvg.convert(file, settings, signal);
     const header = new Uint8Array(await file.slice(0, 65536).arrayBuffer());
     const sourceFormat = sniff(header);
-    const allowed = (tool === 'heic' || tool === 'heicPng') ? ['heic'] : (tool === 'webp' || tool === 'webpJpg' || tool === 'webpBulk') ? ['webp'] : tool === 'avif' ? ['avif'] : tool === 'pngJpg' ? ['png'] : tool === 'jpgPng' ? ['jpeg'] : ['jpeg', 'png', 'webp'];
+    const allowed = (tool === 'heic' || tool === 'heicPng') ? ['heic'] : (tool === 'webp' || tool === 'webpJpg' || tool === 'webpBulk') ? ['webp'] : tool === 'avif' ? ['avif'] : tool === 'pngJpg' ? ['png'] : tool === 'jpgPng' ? ['jpeg'] : tool === 'toWebp' ? ['png', 'jpeg'] : ['jpeg', 'png', 'webp'];
     if (!allowed.includes(sourceFormat)) throw codedError('WRONG_FORMAT');
     if (signal?.aborted) throw codedError('CANCELLED');
     let source, bitmap, sourceWidth, sourceHeight, frameOnly = isAnimated(header, sourceFormat);
