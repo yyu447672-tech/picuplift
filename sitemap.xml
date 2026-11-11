@@ -82,4 +82,8 @@
 <url><loc>https://picuplift.com/png-to-jpg.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 <url><loc>https://picuplift.com/jpg-to-png.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://picuplift.com/to-webp.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://picuplift.com/png-to-ico.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://picuplift.com/svg-to-ico.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://picuplift.com/about.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://picuplift.com/contact.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 </urlset>

@@ -21,6 +21,9 @@
 - [JPG to PNG Converter](https://picuplift.com/jpg-to-png.html): Convert JPG images to PNG with lossless PNG encoding. Batch conversion and ZIP downloads.
 - [PNG & JPG to WebP Converter](https://picuplift.com/to-webp.html): Convert PNG and JPG images to WebP locally, quality 90 by default, transparency kept. Batch conversion and ZIP downloads.
 
+- [PNG to ICO Converter](https://picuplift.com/png-to-ico.html): Convert PNG, JPG, and WebP images to ICO favicon files locally, multiple sizes 16–256px in one file, transparency kept. Batch conversion and ZIP downloads.
+- [SVG to ICO Converter](https://picuplift.com/svg-to-ico.html): Convert SVG logos to ICO favicon files locally, each size rasterized straight from the vector, multiple sizes 16–256px in one file, transparency kept. Batch conversion and ZIP downloads.
+
 ## Guides
 
 - [How to Convert HEIC to JPG on Windows 11](https://picuplift.com/how-to-convert-heic-to-jpg-on-windows-11.html): Three methods to convert HEIC to JPG on Windows 11, including PicUplift.
