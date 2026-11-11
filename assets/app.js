@@ -4,9 +4,11 @@
   const page = document.body.dataset.tool;
   // The home page keeps its own copy and SEO while sharing the HEIC engine.
   const tool = page === 'home' ? 'heic' : ['compress200kb', 'compress100kb'].includes(page) ? 'compress' : page;
-  const usageTool = ['compress200kb', 'compress100kb'].includes(page) ? configFileName(page) : page === 'home' ? 'heic-to-jpg' : tool === 'webpJpg' ? 'webp-to-jpg' : tool === 'webpBulk' ? 'webp-to-png-bulk' : tool === 'avif' ? 'avif-to-jpg' : tool === 'pngJpg' ? 'png-to-jpg' : tool === 'jpgPng' ? 'jpg-to-png' : tool === 'toWebp' ? 'to-webp' : tool;
+  const isIcoTool = tool === 'toIco' || tool === 'svgToIco';
+  const icoSizes = () => [...document.querySelectorAll('[data-ico-size]:checked')].map(input => Number(input.value));
+  const usageTool = ['compress200kb', 'compress100kb'].includes(page) ? configFileName(page) : page === 'home' ? 'heic-to-jpg' : tool === 'webpJpg' ? 'webp-to-jpg' : tool === 'webpBulk' ? 'webp-to-png-bulk' : tool === 'avif' ? 'avif-to-jpg' : tool === 'pngJpg' ? 'png-to-jpg' : tool === 'jpgPng' ? 'jpg-to-png' : tool === 'toWebp' ? 'to-webp' : tool === 'toIco' ? 'png-to-ico' : tool === 'svgToIco' ? 'svg-to-ico' : tool;
   function configFileName(key) { return PicCopy.pages[key].file.replace('.html', ''); }
-  const isToolPage = ['heic', 'heicPng', 'webp', 'webpJpg', 'webpBulk', 'avif', 'pngJpg', 'jpgPng', 'toWebp', 'compress', 'svg'].includes(tool);
+  const isToolPage = ['heic', 'heicPng', 'webp', 'webpJpg', 'webpBulk', 'avif', 'pngJpg', 'jpgPng', 'toWebp', 'toIco', 'svgToIco', 'compress', 'svg'].includes(tool);
   const isHeicTool = tool === 'heic' || tool === 'heicPng';
   const config = PicCopy.pages[page];
   let language = new URLSearchParams(location.search).get('lang') === 'zh' ? 'zh' : 'en';
@@ -62,7 +64,7 @@
       if (typeof text === 'string') node.setAttribute('alt', text);
     });
     document.querySelectorAll('[data-tool-name]').forEach(node => {
-      node.textContent = t({ heic: 'navHeic', heicPng: 'navHeicPng', webp: 'navWebp', webpBulk: 'navBulk', avif: 'navAvif', ocr: 'navOcr', pngJpg: 'navPngJpg', jpgPng: 'navJpgPng', toWebp: 'navToWebp', webpJpg: 'navWebpJpg', svg: 'navSvg', compress: 'navCompress' }[node.dataset.toolName]);
+      node.textContent = t({ heic: 'navHeic', heicPng: 'navHeicPng', webp: 'navWebp', webpBulk: 'navBulk', avif: 'navAvif', ocr: 'navOcr', pngJpg: 'navPngJpg', jpgPng: 'navJpgPng', toWebp: 'navToWebp', toIco: 'navToIco', svgToIco: 'navSvgIco', webpJpg: 'navWebpJpg', svg: 'navSvg', compress: 'navCompress' }[node.dataset.toolName]);
     });
     document.querySelectorAll('[data-tool-short]').forEach(node => { node.textContent = PicCopy.pages[node.dataset.toolShort][language].short; });
     document.querySelectorAll('[data-step-title]').forEach(node => { node.textContent = config[language].steps[Number(node.dataset.stepTitle)][0]; });
@@ -140,7 +142,7 @@
     $('browse').disabled = busy || packing;
     $('sample').disabled = busy || packing || loadingSample;
     $('clear').disabled = busy || packing || !items.length;
-    $('start').disabled = busy || packing || loadingSample || loadingSvg || !items.length;
+    $('start').disabled = busy || packing || loadingSample || loadingSvg || !items.length || (isIcoTool && !icoSizes().length);
     $('cancel').hidden = !busy;
     $('cancel').disabled = Boolean(controller?.signal.aborted);
     $('zip').disabled = busy || packing || loadingSample || !items.some(item => item.output);
@@ -290,6 +292,12 @@
     $('target-validation').textContent = '';
     invalidate('changed');
   }));
+  document.querySelectorAll('[data-ico-preset]').forEach(button => button.addEventListener('click', () => {
+    if (busy || packing) return;
+    const sizes = { favicon: [16, 32], standard: [16, 32, 48, 64], all: [16, 32, 48, 64, 128, 256] }[button.dataset.icoPreset];
+    document.querySelectorAll('[data-ico-size]').forEach(input => { input.checked = sizes.includes(Number(input.value)); });
+    invalidate('changed');
+  }));
   $('settings').addEventListener('input', () => { if (!busy && !packing) invalidate('changed'); });
   $('clear').addEventListener('click', () => {
     if (busy || packing) return;
@@ -301,12 +309,14 @@
   $('start').addEventListener('click', async () => {
     if (busy || packing) return;
     if (!items.length) { showNotice('noFiles', '', true); return; }
+    if (isIcoTool && !icoSizes().length) return;
     clampTarget();
     invalidate('processing');
     const job = ++generation;
     busy = true; controller = new AbortController();
     const signal = controller.signal;
     const settings = { mode: $('compression-mode')?.value || 'quality', targetKB: Number($('target-kb')?.value || 200), quality: Number($('quality')?.value || 100), scale: Number($('scale')?.value || 100), svgWidth: $('svg-width')?.value, svgHeight: $('svg-height')?.value, svgBackground: $('svg-background')?.value, svgColor: $('svg-color')?.value, format: $('output-format')?.value || 'auto' };
+    if (isIcoTool) { delete settings.quality; settings.sizes = icoSizes(); }
     const used = new Set(); let finished = 0;
     $('progress').hidden = false; $('progress').max = items.length; $('progress').value = 0;
     renderAll();
@@ -324,7 +334,7 @@
           if (isHeicTool) await PicLocalAssets.heic(signal);
           const result = await PicCore.convert(item.file, tool, settings, signal);
           if (job !== generation) return;
-          const extension = result.blob.type.split('/')[1].replace('jpeg', 'jpg');
+          const extension = result.blob.type === 'image/x-icon' ? 'ico' : result.blob.type.split('/')[1].replace('jpeg', 'jpg');
           item.output = { ...result, name: PicCore.uniqueName(item.file.name, extension, used), url: URL.createObjectURL(result.blob) };
           item.status = 'done';
         } catch (error) {

@@ -20,6 +20,7 @@
     if (tool === 'heicPng') return 'image/png';
     if (tool === 'webp' || tool === 'webpBulk' || tool === 'jpgPng') return 'image/png';
     if (tool === 'toWebp') return 'image/webp';
+    if (tool === 'toIco' || tool === 'svgToIco') return 'image/x-icon';
     if (choice !== 'auto') return `image/${choice}`;
     return source === 'jpeg' ? 'image/jpeg' : 'image/webp';
   }
@@ -138,11 +139,45 @@
       });
     } finally { worker?.terminate(); URL.revokeObjectURL(workerUrl); }
   }
+  async function packIco(settings, signal, render) {
+    const sizes = [...new Set(settings.sizes || [])].sort((a, b) => a - b);
+    if (!sizes.length || sizes.some(n => ![16, 32, 48, 64, 128, 256].includes(n))) throw codedError('ENCODE');
+    const entries = [], canvas = document.createElement('canvas');
+    try {
+      for (const size of sizes) {
+        if (signal?.aborted) throw codedError('CANCELLED');
+        canvas.width = canvas.height = size;
+        const context = canvas.getContext('2d');
+        if (!context) throw codedError('MEMORY');
+        context.imageSmoothingEnabled = true; context.imageSmoothingQuality = 'high';
+        await render(context, size);
+        if (signal?.aborted) throw codedError('CANCELLED');
+        const png = await new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(codedError('ENCODE')), 'image/png'));
+        entries.push({ width: size, height: size, pngBytes: new Uint8Array(await png.arrayBuffer()) });
+      }
+      if (signal?.aborted) throw codedError('CANCELLED');
+      return { blob: globalThis.PicIco.buildIco(entries), width: sizes.at(-1), height: sizes.at(-1) };
+    } finally { canvas.width = canvas.height = 1; }
+  }
+  async function svgIco(file, settings, signal) {
+    if (signal?.aborted) throw codedError('CANCELLED');
+    const source = globalThis.PicSvg.inspect(await file.text());
+    const output = await packIco(settings, signal, async (context, size) => {
+      const scale = Math.min(size / source.width, size / source.height);
+      const width = Math.max(1, Math.round(source.width * scale)), height = Math.max(1, Math.round(source.height * scale));
+      const result = await globalThis.PicSvg.convert(file, { svgWidth: width, svgHeight: height, svgBackground: 'transparent' }, signal);
+      const bitmap = await createImageBitmap(result.blob);
+      try { context.drawImage(bitmap, (size - width) / 2, (size - height) / 2, width, height); }
+      finally { bitmap.close(); }
+    });
+    return { ...output, sourceWidth: source.width, sourceHeight: source.height, sourceFormat: 'svg', frameOnly: false, fallback: source.fallback };
+  }
   async function convert(file, tool, settings, signal) {
+    if (tool === 'svgToIco') return svgIco(file, settings, signal);
     if (tool === 'svg') return globalThis.PicSvg.convert(file, settings, signal);
     const header = new Uint8Array(await file.slice(0, 65536).arrayBuffer());
     const sourceFormat = sniff(header);
-    const allowed = (tool === 'heic' || tool === 'heicPng') ? ['heic'] : (tool === 'webp' || tool === 'webpJpg' || tool === 'webpBulk') ? ['webp'] : tool === 'avif' ? ['avif'] : tool === 'pngJpg' ? ['png'] : tool === 'jpgPng' ? ['jpeg'] : tool === 'toWebp' ? ['png', 'jpeg'] : ['jpeg', 'png', 'webp'];
+    const allowed = (tool === 'heic' || tool === 'heicPng') ? ['heic'] : (tool === 'webp' || tool === 'webpJpg' || tool === 'webpBulk') ? ['webp'] : tool === 'avif' ? ['avif'] : tool === 'pngJpg' ? ['png'] : tool === 'jpgPng' ? ['jpeg'] : tool === 'toWebp' ? ['png', 'jpeg'] : tool === 'toIco' ? ['png', 'jpeg', 'webp'] : ['jpeg', 'png', 'webp'];
     if (!allowed.includes(sourceFormat)) throw codedError('WRONG_FORMAT');
     if (signal?.aborted) throw codedError('CANCELLED');
     let source, bitmap, sourceWidth, sourceHeight, frameOnly = isAnimated(header, sourceFormat);
@@ -167,6 +202,11 @@
         source = bitmap; sourceWidth = bitmap.width; sourceHeight = bitmap.height;
       }
       if (signal?.aborted) throw codedError('CANCELLED');
+      if (tool === 'toIco') {
+        const edge = Math.min(sourceWidth, sourceHeight);
+        const output = await packIco(settings, signal, (context, size) => { context.drawImage(source, (sourceWidth - edge) / 2, (sourceHeight - edge) / 2, edge, edge, 0, 0, size, size); });
+        return { ...output, sourceWidth, sourceHeight, sourceFormat, frameOnly };
+      }
       const targetMode = tool === 'compress' && settings.mode === 'target';
       const type = targetMode ? targetType(sourceFormat, settings.format) : outputType(tool, sourceFormat, settings.format);
       const encode = async (quality, scale = 100) => {
