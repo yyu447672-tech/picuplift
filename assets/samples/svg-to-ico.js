@@ -1,0 +1,2 @@
+globalThis.PicSamples = globalThis.PicSamples || {};
+globalThis.PicSamples.svgToIco = {"name": "svg-to-png-example-before.svg", "type": "image/svg+xml", "data": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMjQwIiB2aWV3Qm94PSIwIDAgMzIwIDI0MCI+PHBhdGggZmlsbD0iIzFjNTk0YiIgZD0iTTE2MCAyNiAyNjMgODN2NzVsLTEwMyA1OC0xMDMtNThWODNaIi8+PHBhdGggZmlsbD0iI2U5ZjRlZiIgZD0ibTEwNSAxMzcgNTUtNTYgNTUgNTYtMTcgMTctMjYtMjd2NThoLTI0di01OGwtMjYgMjdaIi8+PGNpcmNsZSBjeD0iMjQ0IiBjeT0iNTIiIHI9IjE5IiBmaWxsPSIjZDk5NzM1Ii8+PC9zdmc+"};
