@@ -24,6 +24,11 @@
 - [PNG to ICO Converter](https://picuplift.com/png-to-ico.html): Convert PNG, JPG, and WebP images to ICO favicon files locally, multiple sizes 16–256px in one file, transparency kept. Batch conversion and ZIP downloads.
 - [SVG to ICO Converter](https://picuplift.com/svg-to-ico.html): Convert SVG logos to ICO favicon files locally, each size rasterized straight from the vector, multiple sizes 16–256px in one file, transparency kept. Batch conversion and ZIP downloads.
 
+- [GIF to JPG Converter](https://picuplift.com/gif-to-jpg.html): Convert GIF images to JPG locally, first frame only, transparency turns white. Batch conversion and ZIP downloads.
+- [GIF to PNG Converter](https://picuplift.com/gif-to-png.html): Convert GIF images to PNG locally, first frame only, transparency kept. Batch conversion and ZIP downloads.
+- [JPG to GIF Converter](https://picuplift.com/jpg-to-gif.html): Turn JPG photos into an animated GIF locally, up to 30 frames, adjustable frame delay. One GIF per batch.
+- [AVIF to PNG Converter](https://picuplift.com/avif-to-png.html): Convert AVIF images to PNG locally, transparency kept. Batch conversion and ZIP downloads.
+
 ## Guides
 
 - [How to Convert HEIC to JPG on Windows 11](https://picuplift.com/how-to-convert-heic-to-jpg-on-windows-11.html): Three methods to convert HEIC to JPG on Windows 11, including PicUplift.
@@ -31,13 +36,16 @@
 - [How to Convert HEIC to PNG](https://picuplift.com/how-to-convert-heic-to-png.html): Browser, Mac Preview and Windows Paint methods, with local-processing, codec and lossless-encoding limits explained.
 - [How to Convert WebP to JPG](https://picuplift.com/how-to-convert-webp-to-jpg.html): Browser, Mac Preview and Windows Paint methods with quality and transparency limits explained.
 
+- [How to Convert a GIF to JPG on iPhone](https://picuplift.com/how-to-convert-gif-to-jpg-on-iphone.html): Three methods to convert a GIF to JPG on iPhone, including PicUplift.
+- [How to Turn Multiple Photos into an Animated GIF](https://picuplift.com/how-to-turn-photos-into-animated-gif.html): Browser converter, iPhone Shortcuts, and GIMP methods for making an animated GIF from photos.
+
 ## Privacy
 - [Privacy Policy](https://picuplift.com/privacy-policy.html): What PicUplift collects (Google Analytics for visits and interactions only), what the Chrome extension does not collect, and how to contact the publisher.
 
 - Images are processed locally in the browser tab and are never uploaded or saved by the site.
 - No signup and no account. PicUplift sets no artificial file-size or conversion-count caps; practical limits come from device memory, browser decoders, image dimensions, and ZIP format capacity.
 - The site uses Google Analytics to measure visits and interactions (such as page views, scrolling, and clicks). Images are always processed locally and are never uploaded.
-- Converted outputs are static images: animated WebP or PNG uses its first frame, and multi-image HEIC uses its primary image. Converted outputs do not copy camera metadata. Originals stay untouched.
+- Converted outputs are static images, except JPG to GIF, which makes one animated GIF. An animated WebP, PNG, GIF, or AVIF uses its first frame, and a multi-image HEIC uses its primary image. Converted outputs do not copy camera metadata. Originals stay untouched.
 - PicUplift works offline after downloading the complete folder: open index.html in a current desktop Chrome or Edge, keeping the assets folder alongside the pages.
 
 ## Pricing

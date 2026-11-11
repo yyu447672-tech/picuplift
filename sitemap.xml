@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
+  <url><loc>https://picuplift.com/gif-to-jpg.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+<url><loc>https://picuplift.com/gif-to-png.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+<url><loc>https://picuplift.com/jpg-to-gif.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+<url><loc>https://picuplift.com/avif-to-png.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+<url><loc>https://picuplift.com/how-to-convert-gif-to-jpg-on-iphone.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url><loc>https://picuplift.com/how-to-turn-photos-into-animated-gif.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+<url>
     <loc>https://picuplift.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
