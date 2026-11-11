@@ -41,3 +41,7 @@ The original PicUplift HTML, CSS, JavaScript and documentation are provided unde
 ## Local PDF tools
 
 The three PDF tools additionally bundle pdf-lib and Mozilla PDF.js. See [PDF dependency notices](pdf-tools-NOTICE.md) for pinned versions, source links, licenses and third-party font/WASM notices.
+
+## gifenc 1.0.3
+
+Browser-local GIF encoding. Source: npm gifenc@1.0.3 (https://github.com/mattdesl/gifenc). MIT license; see gifenc-LICENSE.md. Localized at assets/vendor/gifenc-1.0.3.js, with source unmodified.
