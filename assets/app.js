@@ -4,11 +4,12 @@
   const page = document.body.dataset.tool;
   // The home page keeps its own copy and SEO while sharing the HEIC engine.
   const tool = page === 'home' ? 'heic' : ['compress200kb', 'compress100kb'].includes(page) ? 'compress' : page;
+  let gifInputs = null;
   const isIcoTool = tool === 'toIco' || tool === 'svgToIco';
   const icoSizes = () => [...document.querySelectorAll('[data-ico-size]:checked')].map(input => Number(input.value));
-  const usageTool = ['compress200kb', 'compress100kb'].includes(page) ? configFileName(page) : page === 'home' ? 'heic-to-jpg' : tool === 'webpJpg' ? 'webp-to-jpg' : tool === 'webpBulk' ? 'webp-to-png-bulk' : tool === 'avif' ? 'avif-to-jpg' : tool === 'pngJpg' ? 'png-to-jpg' : tool === 'jpgPng' ? 'jpg-to-png' : tool === 'toWebp' ? 'to-webp' : tool === 'toIco' ? 'png-to-ico' : tool === 'svgToIco' ? 'svg-to-ico' : tool;
+  const usageTool = ['compress200kb', 'compress100kb'].includes(page) ? configFileName(page) : ['gifToJpg','gifToPng','jpgToGif','avifToPng'].includes(tool) ? {gifToJpg:'gif-to-jpg',gifToPng:'gif-to-png',jpgToGif:'jpg-to-gif',avifToPng:'avif-to-png'}[tool] : page === 'home' ? 'heic-to-jpg' : tool === 'webpJpg' ? 'webp-to-jpg' : tool === 'webpBulk' ? 'webp-to-png-bulk' : tool === 'avif' ? 'avif-to-jpg' : tool === 'pngJpg' ? 'png-to-jpg' : tool === 'jpgPng' ? 'jpg-to-png' : tool === 'toWebp' ? 'to-webp' : tool === 'toIco' ? 'png-to-ico' : tool === 'svgToIco' ? 'svg-to-ico' : tool;
   function configFileName(key) { return PicCopy.pages[key].file.replace('.html', ''); }
-  const isToolPage = ['heic', 'heicPng', 'webp', 'webpJpg', 'webpBulk', 'avif', 'pngJpg', 'jpgPng', 'toWebp', 'toIco', 'svgToIco', 'compress', 'svg'].includes(tool);
+  const isToolPage = ['gifToJpg', 'gifToPng', 'jpgToGif', 'avifToPng', 'heic', 'heicPng', 'webp', 'webpJpg', 'webpBulk', 'avif', 'pngJpg', 'jpgPng', 'toWebp', 'toIco', 'svgToIco', 'compress', 'svg'].includes(tool);
   const isHeicTool = tool === 'heic' || tool === 'heicPng';
   const config = PicCopy.pages[page];
   let language = new URLSearchParams(location.search).get('lang') === 'zh' ? 'zh' : 'en';
@@ -64,7 +65,7 @@
       if (typeof text === 'string') node.setAttribute('alt', text);
     });
     document.querySelectorAll('[data-tool-name]').forEach(node => {
-      node.textContent = t({ heic: 'navHeic', heicPng: 'navHeicPng', webp: 'navWebp', webpBulk: 'navBulk', avif: 'navAvif', ocr: 'navOcr', pngJpg: 'navPngJpg', jpgPng: 'navJpgPng', toWebp: 'navToWebp', toIco: 'navToIco', svgToIco: 'navSvgIco', webpJpg: 'navWebpJpg', svg: 'navSvg', compress: 'navCompress' }[node.dataset.toolName]);
+      node.textContent = t({ gifToJpg: 'navGifToJpg', gifToPng: 'navGifToPng', jpgToGif: 'navJpgToGif', avifToPng: 'navAvifToPng', heic: 'navHeic', heicPng: 'navHeicPng', webp: 'navWebp', webpBulk: 'navBulk', avif: 'navAvif', ocr: 'navOcr', pngJpg: 'navPngJpg', jpgPng: 'navJpgPng', toWebp: 'navToWebp', toIco: 'navToIco', svgToIco: 'navSvgIco', webpJpg: 'navWebpJpg', svg: 'navSvg', compress: 'navCompress' }[node.dataset.toolName]);
     });
     document.querySelectorAll('[data-tool-short]').forEach(node => { node.textContent = PicCopy.pages[node.dataset.toolShort][language].short; });
     document.querySelectorAll('[data-step-title]').forEach(node => { node.textContent = config[language].steps[Number(node.dataset.stepTitle)][0]; });
@@ -132,6 +133,7 @@
       $('quality-value').textContent = png ? 'PNG' : `${$('quality').value}%`;
       $('png-quality-note').hidden = !png;
     }
+    if ($('delay')) $('delay-value').textContent = `${(Number($('delay').value) / 1000).toFixed(2)} s`;
     if ($('scale')) $('scale-value').textContent = `${$('scale').value}%`;
     if (tool === 'svg') $('svg-color').disabled = busy || packing || $('svg-background').value !== 'custom';
     if ($('white-note')) $('white-note').hidden = $('output-format').value !== 'jpeg';
@@ -145,7 +147,7 @@
     $('start').disabled = busy || packing || loadingSample || loadingSvg || !items.length || (isIcoTool && !icoSizes().length);
     $('cancel').hidden = !busy;
     $('cancel').disabled = Boolean(controller?.signal.aborted);
-    $('zip').disabled = busy || packing || loadingSample || !items.some(item => item.output);
+    $('zip').disabled = tool === 'jpgToGif' || busy || packing || loadingSample || !items.some(item => item.output);
     $('zip').textContent = t(packing ? 'zipBusy' : 'zip');
     $('drop-zone').classList.toggle('is-disabled', busy || packing);
   }
@@ -156,7 +158,7 @@
     $('batch-summary').hidden = !items.length;
     $('file-count').textContent = String(items.length);
     $('summary').textContent = `${items.length} ${t('files')} · ${success.length} ${t('ready')}${failed ? ` · ${failed} ${t('errors')}` : ''}`;
-    $('total-before').textContent = success.length ? bytes(success.reduce((sum, item) => sum + item.file.size, 0)) : '–';
+    $('total-before').textContent = success.length ? bytes(success.reduce((sum, item) => sum + (item.output?.sourceBytes ?? item.file.size), 0)) : '–';
     $('total-after').textContent = success.length ? bytes(success.reduce((sum, item) => sum + item.output.blob.size, 0)) : '–';
     if ($('next-tools')) $('next-tools').hidden = busy || !success.length;
     updateControls();
@@ -170,6 +172,7 @@
     return button;
   }
   function renderRow(item) {
+    const beforeBytes = item.output?.sourceBytes ?? item.file.size;
     const row = element('li', undefined, 'file-row');
     row.dataset.id = item.id; row.dataset.status = item.status;
     const head = element('div', undefined, 'file-head');
@@ -180,15 +183,15 @@
     } else thumb.append(element('span', 'IMG'));
     const title = element('div', undefined, 'file-title');
     title.append(element('strong', item.file.name));
-    const detail = item.output ? `${item.output.width} × ${item.output.height} px · ${item.output.name}` : bytes(item.file.size);
+    const detail = item.output ? `${item.output.width} × ${item.output.height} px · ${item.output.name}` : bytes(beforeBytes);
     title.append(element('span', detail));
     head.append(thumb, title, element('span', t(item.status), `file-status ${item.status}`)); row.append(head);
     if (item.output) {
       const comparison = element('div', undefined, 'size-comparison');
-      comparison.append(element('span', `${t('before')}: ${bytes(item.file.size)}`), element('span', '→'));
+      comparison.append(element('span', `${t('before')}: ${bytes(beforeBytes)}`), element('span', '→'));
       comparison.append(element('strong', `${t('after')}: ${bytes(item.output.blob.size)}`));
-      const change = PicCore.sizeChange(item.file.size, item.output.blob.size);
-      const label = item.output.blob.size === item.file.size ? t('same') : `${change === 0 ? '<1' : Math.abs(change)}% ${t(item.output.blob.size < item.file.size ? 'saved' : 'grew')}`;
+      const change = PicCore.sizeChange(beforeBytes, item.output.blob.size);
+      const label = item.output.blob.size === beforeBytes ? t('same') : `${change === 0 ? '<1' : Math.abs(change)}% ${t(item.output.blob.size < beforeBytes ? 'saved' : 'grew')}`;
       comparison.append(element('span', label, `size-change ${change < 0 ? 'grew' : ''}`)); row.append(comparison);
       if (item.output.targetKB) {
         const output = item.output;
@@ -198,12 +201,12 @@
       }
       if (item.output.fallback) row.append(element('p', t('fallback'), 'row-note'));
       if (item.output.frameOnly) row.append(element('p', t('frameNote'), 'row-note'));
-      if (item.output.blob.size > item.file.size) row.append(element('p', t('largerNote'), 'row-note'));
+      if (item.output.blob.size > beforeBytes) row.append(element('p', t('largerNote'), 'row-note'));
     } else if (item.status === 'failed') row.append(element('p', t(errorKey(item.error)), 'row-error'));
     const actions = element('div', undefined, 'row-actions');
     if (item.output) {
       actions.append(rowButton(t('download'), 'download', item));
-      if (item.output.blob.size > item.file.size) actions.append(rowButton(t('original'), 'original', item));
+      if (item.output.blob.size > beforeBytes && !item.output.sourceBytes) actions.append(rowButton(t('original'), 'original', item));
     }
     actions.append(rowButton(t('remove'), 'remove', item, 'text-button'));
     row.append(actions);
@@ -216,6 +219,7 @@
     items.forEach(renderRow); updateSettings(); renderSummary();
   }
   function invalidate(key) {
+    if (tool === 'jpgToGif' && gifInputs) { items.forEach(release); items = gifInputs; gifInputs = null; }
     for (const item of items) { release(item); item.status = 'queued'; item.error = null; }
     renderAll(); showNotice(key);
     $('progress').hidden = true;
@@ -244,14 +248,18 @@
   function addFiles(files, isSample = false) {
     if (busy || packing || !files.length) return;
     if (!isSample) { sampleGeneration++; loadingSample = false; }
+    if (tool === 'jpgToGif' && gifInputs) { items.forEach(release); items = gifInputs; gifInputs = null; }
     // A manual upload replaces the demo, never the other way round. Repeated
     // demo clicks replace its own row while preserving every user File object.
     items.filter(item => item.isSample).forEach(release);
     items = items.filter(item => !item.isSample);
+    const overLimit = tool === 'jpgToGif' && items.length + files.length > 30;
+    if (tool === 'jpgToGif') files = files.slice(0, Math.max(0, 30 - items.length));
     for (const file of files) items.push({ id: String(++nextId), file, status: 'queued', error: null, output: null, isSample });
     $('file-input').value = '';
     if (tool === 'svg') svgDefaults(items[0].file);
     invalidate('added');
+    if (overLimit) showNotice('tooManyFrames');
     trackUsage('pic_files_selected', isSample ? 'sample' : 'user');
   }
   $('browse').addEventListener('click', () => $('file-input').click());
@@ -261,9 +269,9 @@
     const request = ++sampleGeneration;
     loadingSample = true; updateControls(); showNotice('sampleLoading');
     try {
-      const file = await PicLocalAssets.sample(isHeicTool ? 'heic' : tool === 'webpBulk' ? 'webp' : tool);
+      const file = tool === 'jpgToGif' ? await PicLocalAssets.sampleMany(tool) : await PicLocalAssets.sample(isHeicTool ? 'heic' : tool === 'webpBulk' ? 'webp' : tool);
       if (request !== sampleGeneration) return;
-      addFiles([file], true); showNotice('sampleAdded');
+      addFiles(Array.isArray(file) ? file : [file], true); showNotice('sampleAdded');
     } catch (_) { if (request === sampleGeneration) showNotice('sampleError', '', true); }
     finally { if (request === sampleGeneration) { loadingSample = false; updateControls(); } }
   });
@@ -303,7 +311,7 @@
     if (busy || packing) return;
     sampleGeneration++; loadingSample = false;
     svgSelection++; loadingSvg = false;
-    items.forEach(release); items = []; renderAll(); showNotice('cleared'); $('progress').hidden = true;
+    items.forEach(release); gifInputs = null; items = []; renderAll(); showNotice('cleared'); $('progress').hidden = true;
   });
   $('cancel').addEventListener('click', () => { controller?.abort(); updateControls(); });
   $('start').addEventListener('click', async () => {
@@ -315,7 +323,7 @@
     const job = ++generation;
     busy = true; controller = new AbortController();
     const signal = controller.signal;
-    const settings = { mode: $('compression-mode')?.value || 'quality', targetKB: Number($('target-kb')?.value || 200), quality: Number($('quality')?.value || 100), scale: Number($('scale')?.value || 100), svgWidth: $('svg-width')?.value, svgHeight: $('svg-height')?.value, svgBackground: $('svg-background')?.value, svgColor: $('svg-color')?.value, format: $('output-format')?.value || 'auto' };
+    const settings = { delay: Number($('delay')?.value || 500), mode: $('compression-mode')?.value || 'quality', targetKB: Number($('target-kb')?.value || 200), quality: Number($('quality')?.value || 100), scale: Number($('scale')?.value || 100), svgWidth: $('svg-width')?.value, svgHeight: $('svg-height')?.value, svgBackground: $('svg-background')?.value, svgColor: $('svg-color')?.value, format: $('output-format')?.value || 'auto' };
     if (isIcoTool) { delete settings.quality; settings.sizes = icoSizes(); }
     const used = new Set(); let finished = 0;
     $('progress').hidden = false; $('progress').max = items.length; $('progress').value = 0;
@@ -323,7 +331,21 @@
     const source = usageSource(items);
     trackUsage('pic_conversion_start', source);
     try {
-      for (const item of items) {
+      if (tool === 'jpgToGif') {
+        delete settings.quality;
+        const inputs = items;
+        try {
+          inputs.forEach(item => { item.status = 'processing'; }); renderAll();
+          await new Promise(resolve => setTimeout(resolve, 0));
+          const result = await PicCore.convertGif(inputs.map(item => item.file), settings, signal, done => { $('progress').value = done; });
+          if (signal.aborted) throw Object.assign(new Error('CANCELLED'), { code: 'CANCELLED' });
+          gifInputs = inputs;
+          items = [{ ...inputs[0], output: { ...result, name: PicCore.uniqueName(inputs[0].file.name, 'gif', used), url: URL.createObjectURL(result.blob) }, status: 'done', error: null }];
+        } catch (error) {
+          inputs.forEach(item => { item.status = signal.aborted ? 'cancelled' : 'failed'; item.error = error.code || 'DECODE'; item.output = null; });
+        }
+        renderAll();
+      } else for (const item of items) {
         if (job !== generation) return;
         if (signal.aborted) { item.status = 'cancelled'; renderRow(item); continue; }
         item.status = 'processing'; renderRow(item); showNotice('processing', `${finished + 1} / ${items.length}`);
@@ -374,6 +396,7 @@
       trackUsage('pic_download_click', usageSource([item]), 'original');
     }
     if (button.dataset.action === 'remove') {
+      if (tool === 'jpgToGif' && gifInputs) gifInputs = null;
       release(item); items = items.filter(value => value !== item);
       rowNodes.get(item.id)?.remove(); rowNodes.delete(item.id); renderSummary();
     }

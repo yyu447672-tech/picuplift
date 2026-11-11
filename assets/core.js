@@ -3,6 +3,7 @@
   'use strict';
   const ascii = (bytes, start, size) => String.fromCharCode(...bytes.slice(start, start + size));
   function sniff(bytes) {
+    if (['GIF87a', 'GIF89a'].includes(ascii(bytes, 0, 6))) return 'gif';
     if (bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255) return 'jpeg';
     if (ascii(bytes, 0, 8) === '\x89PNG\r\n\x1a\n') return 'png';
     if (ascii(bytes, 0, 4) === 'RIFF' && ascii(bytes, 8, 4) === 'WEBP') return 'webp';
@@ -16,6 +17,9 @@
     return null;
   }
   function outputType(tool, source, choice = 'auto') {
+    if (tool === 'gifToJpg') return 'image/jpeg';
+    if (['gifToPng', 'avifToPng'].includes(tool)) return 'image/png';
+    if (tool === 'jpgToGif') return 'image/gif';
     if (tool === 'heic' || tool === 'webpJpg' || tool === 'avif' || tool === 'pngJpg') return 'image/jpeg';
     if (tool === 'heicPng') return 'image/png';
     if (tool === 'webp' || tool === 'webpBulk' || tool === 'jpgPng') return 'image/png';
@@ -38,6 +42,33 @@
     return result;
   }
   function isAnimated(bytes, format) {
+    if (format === 'gif') {
+    let i = 13;
+    if (bytes[10] & 0x80) i += 3 * (2 ** ((bytes[10] & 0x07) + 1)); // 跳过全局颜色表
+    let frames = 0;
+    const skipSubBlocks = () => { while (i < bytes.length) { const size = bytes[i++]; if (size === 0) break; i += size; } };
+    while (i < bytes.length) {
+      const marker = bytes[i];
+      if (marker === 0x2C) { // 图像描述符：10 字节 + 可选局部颜色表 + LZW 数据
+        frames++;
+        if (frames > 1) return true;
+        const packed = bytes[i + 9];
+        i += 10;
+        if (packed & 0x80) i += 3 * (2 ** ((packed & 0x07) + 1));
+        i++; // LZW 最小编码长度
+        skipSubBlocks();
+      } else if (marker === 0x21) { // 扩展块：label + 子块
+        i += 2;
+        skipSubBlocks();
+      } else if (marker === 0x3B) { // Trailer
+        return false;
+      } else {
+        return frames > 1;
+      }
+    }
+    return frames > 1;
+  }
+
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     if (format === 'avif' && ascii(bytes, 4, 4) === 'ftyp') {
       const size = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(0);
@@ -177,7 +208,7 @@
     if (tool === 'svg') return globalThis.PicSvg.convert(file, settings, signal);
     const header = new Uint8Array(await file.slice(0, 65536).arrayBuffer());
     const sourceFormat = sniff(header);
-    const allowed = (tool === 'heic' || tool === 'heicPng') ? ['heic'] : (tool === 'webp' || tool === 'webpJpg' || tool === 'webpBulk') ? ['webp'] : tool === 'avif' ? ['avif'] : tool === 'pngJpg' ? ['png'] : tool === 'jpgPng' ? ['jpeg'] : tool === 'toWebp' ? ['png', 'jpeg'] : tool === 'toIco' ? ['png', 'jpeg', 'webp'] : ['jpeg', 'png', 'webp'];
+    const allowed = ['gifToJpg', 'gifToPng'].includes(tool) ? ['gif'] : tool === 'avifToPng' ? ['avif'] : (tool === 'heic' || tool === 'heicPng') ? ['heic'] : (tool === 'webp' || tool === 'webpJpg' || tool === 'webpBulk') ? ['webp'] : tool === 'avif' ? ['avif'] : tool === 'pngJpg' ? ['png'] : tool === 'jpgPng' ? ['jpeg'] : tool === 'toWebp' ? ['png', 'jpeg'] : tool === 'toIco' ? ['png', 'jpeg', 'webp'] : ['jpeg', 'png', 'webp'];
     if (!allowed.includes(sourceFormat)) throw codedError('WRONG_FORMAT');
     if (signal?.aborted) throw codedError('CANCELLED');
     let source, bitmap, sourceWidth, sourceHeight, frameOnly = isAnimated(header, sourceFormat);
@@ -235,6 +266,61 @@
       if (heicCanvas) heicCanvas.width = heicCanvas.height = 1;
     }
   }
-  globalThis.PicCore = Object.freeze({ sniff, outputType, dimensions, uniqueName, isAnimated, sizeChange, canZip, searchTarget, targetType, convert });
+  async function convertGif(files, settings, signal, onProgress) {
+    if (!files.length || files.length > 30) throw codedError('ENCODE');
+    if (!globalThis.gifencExports?.GIFEncoder) throw codedError('ENCODE');
+    for (const file of files) {
+      const header = new Uint8Array(await file.slice(0, 6).arrayBuffer());
+      if (sniff(header) !== 'jpeg') throw codedError('WRONG_FORMAT'); // 任一非 JPG → 整批失败
+    }
+    const delay = Math.min(2000, Math.max(100, Number(settings.delay) || 500));
+    const { GIFEncoder, quantize, applyPalette } = globalThis.gifencExports;
+    const gif = GIFEncoder();
+    const canvas = document.createElement('canvas');
+    let width, height, firstWidth, firstHeight;
+    const sourceBytes = files.reduce((sum, file) => sum + file.size, 0);
+    try {
+      for (let index = 0; index < files.length; index++) {
+        if (signal?.aborted) throw codedError('CANCELLED');
+        const bitmap = await createImageBitmap(files[index], { imageOrientation: 'from-image' });
+        try {
+          if (index === 0) {
+            firstWidth = bitmap.width; firstHeight = bitmap.height;
+            const base = dimensions(bitmap.width, bitmap.height, settings.scale);
+            width = base.width; height = base.height;
+            if (Math.max(width, height) > 1200) { const k = 1200 / Math.max(width, height); width = Math.max(1, Math.round(width * k)); height = Math.max(1, Math.round(height * k)); }
+            canvas.width = width; canvas.height = height;
+          }
+          const context = canvas.getContext('2d');
+          if (!context) throw codedError('MEMORY');
+          context.imageSmoothingEnabled = true; context.imageSmoothingQuality = 'high';
+          if (index === 0) context.drawImage(bitmap, 0, 0, width, height);
+          else { // 后续帧按 cover 裁切对齐到首帧尺寸，不拉伸
+            const scale = Math.max(width / bitmap.width, height / bitmap.height);
+            const dw = bitmap.width * scale, dh = bitmap.height * scale;
+            context.drawImage(bitmap, (width - dw) / 2, (height - dh) / 2, dw, dh);
+          }
+          const rgba = context.getImageData(0, 0, width, height).data;
+          const palette = quantize(rgba, 256, { format: 'rgba4444', oneBitAlpha: true, clearAlpha: true, clearAlphaThreshold: 0 });
+          const frameIndex = applyPalette(rgba, palette, 'rgba4444');
+          const transparentIndex = palette.findIndex(c => c.length === 4 && c[3] === 0);
+          gif.writeFrame(frameIndex, width, height, { palette, transparent: transparentIndex >= 0, transparentIndex: Math.max(0, transparentIndex), delay, ...(index === 0 ? { repeat: 0 } : {}) });
+        } finally { bitmap.close(); }
+        if (signal?.aborted) throw codedError('CANCELLED');
+        onProgress?.(index + 1, files.length);
+        // Yield so a user cancel can be handled between synchronous encoding frames.
+        await new Promise(resolve => setTimeout(resolve, 0));
+        if (signal?.aborted) throw codedError('CANCELLED');
+      }
+      gif.finish();
+      const blob = new Blob([gif.bytes()], { type: 'image/gif' });
+      return { blob, width, height, frames: files.length, delay, sourceBytes, sourceWidth: firstWidth, sourceHeight: firstHeight, sourceFormat: 'jpeg', frameOnly: false };
+    } catch (error) {
+      if (error.code) throw error;
+      throw codedError(error instanceof RangeError ? 'MEMORY' : 'DECODE');
+    } finally { canvas.width = canvas.height = 1; }
+  }
+
+  globalThis.PicCore = Object.freeze({ sniff, outputType, dimensions, uniqueName, isAnimated, sizeChange, canZip, searchTarget, targetType, convert, convertGif });
 })();
 

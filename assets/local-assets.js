@@ -3,7 +3,7 @@
   'use strict';
   const base = new URL('.', document.currentScript.src);
   const pending = new Map();
-  const samples = Object.freeze({ heic: 'samples/heic.js', webp: 'samples/webp.js', compress: 'samples/compress.js', webpJpg: 'samples/webp-jpg.js', svg: 'samples/svg.js', pngJpg: 'samples/png-jpg.js', jpgPng: 'samples/jpg-png.js', toWebp: 'samples/to-webp.js', toIco: 'samples/to-ico.js', svgToIco: 'samples/svg-to-ico.js' });
+  const samples = Object.freeze({ gifToJpg: 'samples/gif-to-jpg.js', gifToPng: 'samples/gif-to-png.js', jpgToGif: 'samples/jpg-to-gif.js', heic: 'samples/heic.js', webp: 'samples/webp.js', compress: 'samples/compress.js', webpJpg: 'samples/webp-jpg.js', svg: 'samples/svg.js', pngJpg: 'samples/png-jpg.js', jpgPng: 'samples/jpg-png.js', toWebp: 'samples/to-webp.js', toIco: 'samples/to-ico.js', svgToIco: 'samples/svg-to-ico.js' });
   const error = code => Object.assign(new Error(code), { code });
   function load(path) {
     const url = new URL(path, base).href;
@@ -34,6 +34,13 @@
     if (!data) throw error('LOCAL_ASSET');
     return new File([Uint8Array.from(atob(data.data), char => char.charCodeAt(0))], data.name, { type: data.type, lastModified: 0 });
   }
+  async function sampleMany(tool, signal) {
+    if (!Object.hasOwn(samples, tool)) throw error('LOCAL_ASSET');
+    await withSignal(load(samples[tool]), signal);
+    const entries = globalThis.PicSamples?.[tool];
+    if (!Array.isArray(entries) || !entries.length || entries.some(data => !data.name || !data.type || !data.data)) throw error('LOCAL_ASSET');
+    return entries.map(data => new File([Uint8Array.from(atob(data.data), char => char.charCodeAt(0))], data.name, { type: data.type, lastModified: 0 }));
+  }
   async function heic(signal) {
     if (signal?.aborted) throw error('CANCELLED');
     if (!globalThis.PIC_HEIF_SOURCE) {
@@ -42,6 +49,6 @@
     }
     if (!globalThis.PIC_HEIF_SOURCE) throw error('HEIC_UNAVAILABLE');
   }
-  globalThis.PicLocalAssets = Object.freeze({ sample, heic });
+  globalThis.PicLocalAssets = Object.freeze({ sample, sampleMany, heic });
 })();
 
