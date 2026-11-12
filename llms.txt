@@ -28,6 +28,11 @@
 - [GIF to PNG Converter](https://picuplift.com/gif-to-png.html): Convert GIF images to PNG locally, first frame only, transparency kept. Batch conversion and ZIP downloads.
 - [JPG to GIF Converter](https://picuplift.com/jpg-to-gif.html): Turn JPG photos into an animated GIF locally, up to 30 frames, adjustable frame delay. One GIF per batch.
 - [AVIF to PNG Converter](https://picuplift.com/avif-to-png.html): Convert AVIF images to PNG locally, transparency kept. Batch conversion and ZIP downloads.
+- [Image Splitter](https://picuplift.com/image-splitter.html): Split an image into equal parts or a grid locally, download PNG tiles one by one or as a ZIP. Batch splitting up to 20 images, free.
+- [Split Image into 4 Parts](https://picuplift.com/split-image-into-4-parts.html): Split an image into 4 equal parts locally, download four PNG tiles or one ZIP.
+- [Cut Image into 9 Squares](https://picuplift.com/cut-image-into-9-squares.html): Cut an image into 9 squares locally, a 3×3 grid for Instagram, download nine PNG tiles or one ZIP.
+- [Split Image into Equal Parts](https://picuplift.com/split-image-into-equal-parts.html): Split an image into 2 to 5 equal parts locally, download PNG tiles or one ZIP.
+- [PNG to GIF Converter](https://picuplift.com/png-to-gif.html): Turn PNG images into an animated GIF locally, up to 30 frames, adjustable frame delay. One GIF per batch.
 
 ## Guides
 
@@ -45,7 +50,7 @@
 - Images are processed locally in the browser tab and are never uploaded or saved by the site.
 - No signup and no account. PicUplift sets no artificial file-size or conversion-count caps; practical limits come from device memory, browser decoders, image dimensions, and ZIP format capacity.
 - The site uses Google Analytics to measure visits and interactions (such as page views, scrolling, and clicks). Images are always processed locally and are never uploaded.
-- Converted outputs are static images, except JPG to GIF, which makes one animated GIF. An animated WebP, PNG, GIF, or AVIF uses its first frame, and a multi-image HEIC uses its primary image. Converted outputs do not copy camera metadata. Originals stay untouched.
+- Converted outputs are static images, except JPG to GIF and PNG to GIF, which make animated GIFs. An animated WebP, PNG, GIF, or AVIF uses its first frame, and a multi-image HEIC uses its primary image. Converted outputs do not copy camera metadata. Originals stay untouched.
 - PicUplift works offline after downloading the complete folder: open index.html in a current desktop Chrome or Edge, keeping the assets folder alongside the pages.
 
 ## Pricing
