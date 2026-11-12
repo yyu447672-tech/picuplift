@@ -5,11 +5,13 @@
   // The home page keeps its own copy and SEO while sharing the HEIC engine.
   const tool = page === 'home' ? 'heic' : ['compress200kb', 'compress100kb'].includes(page) ? 'compress' : page;
   let gifInputs = null;
+  const isGifTool = ['jpgToGif', 'pngToGif'].includes(tool);
+  const isSplitterTool = ['splitter', 'split4', 'split9', 'splitEqual'].includes(tool);
   const isIcoTool = tool === 'toIco' || tool === 'svgToIco';
   const icoSizes = () => [...document.querySelectorAll('[data-ico-size]:checked')].map(input => Number(input.value));
-  const usageTool = ['compress200kb', 'compress100kb'].includes(page) ? configFileName(page) : ['gifToJpg','gifToPng','jpgToGif','avifToPng'].includes(tool) ? {gifToJpg:'gif-to-jpg',gifToPng:'gif-to-png',jpgToGif:'jpg-to-gif',avifToPng:'avif-to-png'}[tool] : page === 'home' ? 'heic-to-jpg' : tool === 'webpJpg' ? 'webp-to-jpg' : tool === 'webpBulk' ? 'webp-to-png-bulk' : tool === 'avif' ? 'avif-to-jpg' : tool === 'pngJpg' ? 'png-to-jpg' : tool === 'jpgPng' ? 'jpg-to-png' : tool === 'toWebp' ? 'to-webp' : tool === 'toIco' ? 'png-to-ico' : tool === 'svgToIco' ? 'svg-to-ico' : tool;
+  const usageTool = ['compress200kb', 'compress100kb'].includes(page) ? configFileName(page) : ['gifToJpg','gifToPng','jpgToGif','avifToPng','pngToGif','splitter','split4','split9','splitEqual'].includes(tool) ? {gifToJpg:'gif-to-jpg',gifToPng:'gif-to-png',jpgToGif:'jpg-to-gif',avifToPng:'avif-to-png',pngToGif:'png-to-gif',splitter:'image-splitter',split4:'split-image-into-4-parts',split9:'cut-image-into-9-squares',splitEqual:'split-image-into-equal-parts'}[tool] : page === 'home' ? 'heic-to-jpg' : tool === 'webpJpg' ? 'webp-to-jpg' : tool === 'webpBulk' ? 'webp-to-png-bulk' : tool === 'avif' ? 'avif-to-jpg' : tool === 'pngJpg' ? 'png-to-jpg' : tool === 'jpgPng' ? 'jpg-to-png' : tool === 'toWebp' ? 'to-webp' : tool === 'toIco' ? 'png-to-ico' : tool === 'svgToIco' ? 'svg-to-ico' : tool;
   function configFileName(key) { return PicCopy.pages[key].file.replace('.html', ''); }
-  const isToolPage = ['gifToJpg', 'gifToPng', 'jpgToGif', 'avifToPng', 'heic', 'heicPng', 'webp', 'webpJpg', 'webpBulk', 'avif', 'pngJpg', 'jpgPng', 'toWebp', 'toIco', 'svgToIco', 'compress', 'svg'].includes(tool);
+  const isToolPage = ['splitter', 'split4', 'split9', 'splitEqual', 'pngToGif', 'gifToJpg', 'gifToPng', 'jpgToGif', 'avifToPng', 'heic', 'heicPng', 'webp', 'webpJpg', 'webpBulk', 'avif', 'pngJpg', 'jpgPng', 'toWebp', 'toIco', 'svgToIco', 'compress', 'svg'].includes(tool);
   const isHeicTool = tool === 'heic' || tool === 'heicPng';
   const config = PicCopy.pages[page];
   let language = new URLSearchParams(location.search).get('lang') === 'zh' ? 'zh' : 'en';
@@ -65,7 +67,7 @@
       if (typeof text === 'string') node.setAttribute('alt', text);
     });
     document.querySelectorAll('[data-tool-name]').forEach(node => {
-      node.textContent = t({ gifToJpg: 'navGifToJpg', gifToPng: 'navGifToPng', jpgToGif: 'navJpgToGif', avifToPng: 'navAvifToPng', heic: 'navHeic', heicPng: 'navHeicPng', webp: 'navWebp', webpBulk: 'navBulk', avif: 'navAvif', ocr: 'navOcr', pngJpg: 'navPngJpg', jpgPng: 'navJpgPng', toWebp: 'navToWebp', toIco: 'navToIco', svgToIco: 'navSvgIco', webpJpg: 'navWebpJpg', svg: 'navSvg', compress: 'navCompress' }[node.dataset.toolName]);
+      node.textContent = t({ splitter: 'navSplitter', split4: 'navSplit4', split9: 'navSplit9', splitEqual: 'navSplitEqual', pngToGif: 'navPngToGif', gifToJpg: 'navGifToJpg', gifToPng: 'navGifToPng', jpgToGif: 'navJpgToGif', avifToPng: 'navAvifToPng', heic: 'navHeic', heicPng: 'navHeicPng', webp: 'navWebp', webpBulk: 'navBulk', avif: 'navAvif', ocr: 'navOcr', pngJpg: 'navPngJpg', jpgPng: 'navJpgPng', toWebp: 'navToWebp', toIco: 'navToIco', svgToIco: 'navSvgIco', webpJpg: 'navWebpJpg', svg: 'navSvg', compress: 'navCompress' }[node.dataset.toolName]);
     });
     document.querySelectorAll('[data-tool-short]').forEach(node => { node.textContent = PicCopy.pages[node.dataset.toolShort][language].short; });
     document.querySelectorAll('[data-step-title]').forEach(node => { node.textContent = config[language].steps[Number(node.dataset.stepTitle)][0]; });
@@ -110,9 +112,18 @@
 
   function release(item) {
     if (item.output?.url) URL.revokeObjectURL(item.output.url);
+    if (item.output?.thumbUrl) URL.revokeObjectURL(item.output.thumbUrl);
     item.output = null;
   }
   function updateSettings() {
+    if (isSplitterTool) {
+      const equal = document.querySelector('input[name="split-mode"]:checked')?.value === 'equal';
+      if ($('split-equal-controls')) $('split-equal-controls').hidden = !equal;
+      if ($('split-grid-controls')) $('split-grid-controls').hidden = equal;
+      for (const [id, min, max, fallback] of [['split-parts',2,5,2],['split-rows',1,20,3],['split-cols',1,20,3]]) {
+        const input = $(id); if (input) input.value = Math.min(max, Math.max(min, Math.round(Number(input.value) || fallback)));
+      }
+    }
     const target = $('compression-mode')?.value === 'target';
     if ($('target-controls')) {
       $('target-controls').hidden = !target;
@@ -147,7 +158,7 @@
     $('start').disabled = busy || packing || loadingSample || loadingSvg || !items.length || (isIcoTool && !icoSizes().length);
     $('cancel').hidden = !busy;
     $('cancel').disabled = Boolean(controller?.signal.aborted);
-    $('zip').disabled = tool === 'jpgToGif' || busy || packing || loadingSample || !items.some(item => item.output);
+    $('zip').disabled = isGifTool || busy || packing || loadingSample || !items.some(item => item.output);
     $('zip').textContent = t(packing ? 'zipBusy' : 'zip');
     $('drop-zone').classList.toggle('is-disabled', busy || packing);
   }
@@ -178,12 +189,12 @@
     const head = element('div', undefined, 'file-head');
     const thumb = element('div', undefined, 'thumbnail');
     if (item.output) {
-      const img = document.createElement('img'); img.src = item.output.url; img.alt = item.file.name; img.loading = 'lazy';
+      const img = document.createElement('img'); img.src = item.output.thumbUrl || item.output.url; img.alt = item.file.name; img.loading = 'lazy';
       thumb.append(img);
     } else thumb.append(element('span', 'IMG'));
     const title = element('div', undefined, 'file-title');
     title.append(element('strong', item.file.name));
-    const detail = item.output ? `${item.output.width} × ${item.output.height} px · ${item.output.name}` : bytes(beforeBytes);
+    const detail = item.output?.tiles ? `${item.output.mode === 'grid' ? t('splitGridDetail').replace('{rows}',item.output.rows).replace('{cols}',item.output.cols).replace('{n}',item.output.tiles.length) : t('splitEqualDetail').replace('{n}',item.output.tiles.length)} · ${item.output.name}` : item.output ? `${item.output.width} × ${item.output.height} px · ${item.output.name}` : bytes(beforeBytes);
     title.append(element('span', detail));
     head.append(thumb, title, element('span', t(item.status), `file-status ${item.status}`)); row.append(head);
     if (item.output) {
@@ -201,7 +212,7 @@
       }
       if (item.output.fallback) row.append(element('p', t('fallback'), 'row-note'));
       if (item.output.frameOnly) row.append(element('p', t('frameNote'), 'row-note'));
-      if (item.output.blob.size > beforeBytes) row.append(element('p', t('largerNote'), 'row-note'));
+      if (item.output.blob.size > beforeBytes && !item.output.tiles) row.append(element('p', t('largerNote'), 'row-note'));
     } else if (item.status === 'failed') row.append(element('p', t(errorKey(item.error)), 'row-error'));
     const actions = element('div', undefined, 'row-actions');
     if (item.output) {
@@ -210,6 +221,12 @@
     }
     actions.append(rowButton(t('remove'), 'remove', item, 'text-button'));
     row.append(actions);
+    if (item.output?.tiles) {
+      const list = element('ul', undefined, 'tile-list');
+      item.output.tiles.slice(0,25).forEach((tile,index) => { const li = element('li'); const button = rowButton(tile.name, 'tile', item); button.dataset.tileIndex = String(index); li.append(button); list.append(li); });
+      if (item.output.tiles.length > 25) list.append(element('li', t('tilesTruncated').replace('{n}', item.output.tiles.length)));
+      row.append(list);
+    }
     const old = rowNodes.get(item.id);
     if (old?.isConnected) old.replaceWith(row); else $('file-list').append(row);
     rowNodes.set(item.id, row);
@@ -219,7 +236,7 @@
     items.forEach(renderRow); updateSettings(); renderSummary();
   }
   function invalidate(key) {
-    if (tool === 'jpgToGif' && gifInputs) { items.forEach(release); items = gifInputs; gifInputs = null; }
+    if (isGifTool && gifInputs) { items.forEach(release); items = gifInputs; gifInputs = null; }
     for (const item of items) { release(item); item.status = 'queued'; item.error = null; }
     renderAll(); showNotice(key);
     $('progress').hidden = true;
@@ -248,17 +265,20 @@
   function addFiles(files, isSample = false) {
     if (busy || packing || !files.length) return;
     if (!isSample) { sampleGeneration++; loadingSample = false; }
-    if (tool === 'jpgToGif' && gifInputs) { items.forEach(release); items = gifInputs; gifInputs = null; }
+    if (isGifTool && gifInputs) { items.forEach(release); items = gifInputs; gifInputs = null; }
     // A manual upload replaces the demo, never the other way round. Repeated
     // demo clicks replace its own row while preserving every user File object.
     items.filter(item => item.isSample).forEach(release);
     items = items.filter(item => !item.isSample);
-    const overLimit = tool === 'jpgToGif' && items.length + files.length > 30;
-    if (tool === 'jpgToGif') files = files.slice(0, Math.max(0, 30 - items.length));
+    const splitOverLimit = isSplitterTool && items.length + files.length > 20;
+    if (isSplitterTool) files = files.slice(0, Math.max(0, 20 - items.length));
+    const overLimit = isGifTool && items.length + files.length > 30;
+    if (isGifTool) files = files.slice(0, Math.max(0, 30 - items.length));
     for (const file of files) items.push({ id: String(++nextId), file, status: 'queued', error: null, output: null, isSample });
     $('file-input').value = '';
     if (tool === 'svg') svgDefaults(items[0].file);
     invalidate('added');
+    if (splitOverLimit) showNotice('tooManySplitImages');
     if (overLimit) showNotice('tooManyFrames');
     trackUsage('pic_files_selected', isSample ? 'sample' : 'user');
   }
@@ -269,7 +289,7 @@
     const request = ++sampleGeneration;
     loadingSample = true; updateControls(); showNotice('sampleLoading');
     try {
-      const file = tool === 'jpgToGif' ? await PicLocalAssets.sampleMany(tool) : await PicLocalAssets.sample(isHeicTool ? 'heic' : tool === 'webpBulk' ? 'webp' : tool);
+      const file = isGifTool ? await PicLocalAssets.sampleMany(tool) : await PicLocalAssets.sample(isHeicTool ? 'heic' : tool === 'webpBulk' ? 'webp' : tool);
       if (request !== sampleGeneration) return;
       addFiles(Array.isArray(file) ? file : [file], true); showNotice('sampleAdded');
     } catch (_) { if (request === sampleGeneration) showNotice('sampleError', '', true); }
@@ -324,6 +344,8 @@
     busy = true; controller = new AbortController();
     const signal = controller.signal;
     const settings = { delay: Number($('delay')?.value || 500), mode: $('compression-mode')?.value || 'quality', targetKB: Number($('target-kb')?.value || 200), quality: Number($('quality')?.value || 100), scale: Number($('scale')?.value || 100), svgWidth: $('svg-width')?.value, svgHeight: $('svg-height')?.value, svgBackground: $('svg-background')?.value, svgColor: $('svg-color')?.value, format: $('output-format')?.value || 'auto' };
+    Object.assign(settings, { splitMode: document.querySelector('input[name="split-mode"]:checked')?.value || 'grid', splitParts: Number($('split-parts')?.value || 2), splitRows: Number($('split-rows')?.value || 3), splitCols: Number($('split-cols')?.value || 3), splitDirection: document.querySelector('input[name="split-direction"]:checked')?.value || 'cols' });
+    if (isSplitterTool) { delete settings.quality; delete settings.scale; }
     if (isIcoTool) { delete settings.quality; settings.sizes = icoSizes(); }
     const used = new Set(); let finished = 0;
     $('progress').hidden = false; $('progress').max = items.length; $('progress').value = 0;
@@ -331,8 +353,9 @@
     const source = usageSource(items);
     trackUsage('pic_conversion_start', source);
     try {
-      if (tool === 'jpgToGif') {
+      if (isGifTool) {
         delete settings.quality;
+        settings.inputFormat = tool === 'pngToGif' ? 'png' : 'jpeg';
         const inputs = items;
         try {
           inputs.forEach(item => { item.status = 'processing'; }); renderAll();
@@ -354,10 +377,11 @@
         if (job !== generation) return;
         try {
           if (isHeicTool) await PicLocalAssets.heic(signal);
-          const result = await PicCore.convert(item.file, tool, settings, signal);
+          const result = isSplitterTool ? await PicCore.splitImage(item.file, settings, signal, used) : await PicCore.convert(item.file, tool, settings, signal);
+          if (signal.aborted) throw Object.assign(new Error('CANCELLED'), { code: 'CANCELLED' });
           if (job !== generation) return;
-          const extension = result.blob.type === 'image/x-icon' ? 'ico' : result.blob.type.split('/')[1].replace('jpeg', 'jpg');
-          item.output = { ...result, name: PicCore.uniqueName(item.file.name, extension, used), url: URL.createObjectURL(result.blob) };
+          const extension = isSplitterTool ? 'zip' : result.blob.type === 'image/x-icon' ? 'ico' : result.blob.type.split('/')[1].replace('jpeg', 'jpg');
+          item.output = { ...result, name: PicCore.uniqueName(isSplitterTool ? (item.file.name.replace(/\.[^.]*$/, '').replace(/[\\/\x00-\x1f\x7f<>:"|?*]/g, '_').replace(/^\.+/, '').trim() || 'image').slice(0, 154) + '-split.zip' : item.file.name, extension, used), ...(isSplitterTool ? { thumbUrl: URL.createObjectURL(result.tiles[0].blob) } : {}), url: URL.createObjectURL(result.blob) };
           item.status = 'done';
         } catch (error) {
           if (job !== generation) return;
@@ -391,12 +415,16 @@
       download(item.output.blob, item.output.name);
       trackUsage('pic_download_click', usageSource([item]), 'image');
     }
+    if (button.dataset.action === 'tile' && item.output?.tiles) {
+      const tile = item.output.tiles[Number(button.dataset.tileIndex)];
+      if (tile) { download(tile.blob, tile.name); trackUsage('pic_download_click', usageSource([item]), 'image'); }
+    }
     if (button.dataset.action === 'original' && item.output) {
       download(item.file, item.file.name);
       trackUsage('pic_download_click', usageSource([item]), 'original');
     }
     if (button.dataset.action === 'remove') {
-      if (tool === 'jpgToGif' && gifInputs) gifInputs = null;
+      if (isGifTool && gifInputs) gifInputs = null;
       release(item); items = items.filter(value => value !== item);
       rowNodes.get(item.id)?.remove(); rowNodes.delete(item.id); renderSummary();
     }
@@ -405,12 +433,13 @@
     if (busy || packing || loadingSample) return;
     const success = items.filter(item => item.output);
     if (!success.length) { showNotice('noneReady', '', true); return; }
-    if (!PicCore.canZip(success.map(item => item.output.blob.size))) { showNotice('zipLimit', '', true); return; }
+    const entries = isSplitterTool ? success.flatMap(item => item.output.tiles) : success.map(item => item.output);
+    if (!PicCore.canZip(entries.map(entry => entry.blob.size))) { showNotice('zipLimit', '', true); return; }
     const job = generation;
     packing = true; renderAll(); showNotice('zipBusy');
     try {
       const zip = new JSZip();
-      for (const item of success) zip.file(item.output.name, item.output.blob);
+      for (const entry of entries) zip.file(entry.name, entry.blob);
       const blob = await zip.generateAsync({ type: 'blob', compression: 'STORE', streamFiles: true }, metadata => {
         if (job === generation) showNotice('zipBusy', `${Math.round(metadata.percent)}%`);
       });

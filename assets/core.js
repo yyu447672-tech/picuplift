@@ -19,6 +19,7 @@
   function outputType(tool, source, choice = 'auto') {
     if (tool === 'gifToJpg') return 'image/jpeg';
     if (['gifToPng', 'avifToPng'].includes(tool)) return 'image/png';
+    if (tool === 'pngToGif') return 'image/gif';
     if (tool === 'jpgToGif') return 'image/gif';
     if (tool === 'heic' || tool === 'webpJpg' || tool === 'avif' || tool === 'pngJpg') return 'image/jpeg';
     if (tool === 'heicPng') return 'image/png';
@@ -208,7 +209,7 @@
     if (tool === 'svg') return globalThis.PicSvg.convert(file, settings, signal);
     const header = new Uint8Array(await file.slice(0, 65536).arrayBuffer());
     const sourceFormat = sniff(header);
-    const allowed = ['gifToJpg', 'gifToPng'].includes(tool) ? ['gif'] : tool === 'avifToPng' ? ['avif'] : (tool === 'heic' || tool === 'heicPng') ? ['heic'] : (tool === 'webp' || tool === 'webpJpg' || tool === 'webpBulk') ? ['webp'] : tool === 'avif' ? ['avif'] : tool === 'pngJpg' ? ['png'] : tool === 'jpgPng' ? ['jpeg'] : tool === 'toWebp' ? ['png', 'jpeg'] : tool === 'toIco' ? ['png', 'jpeg', 'webp'] : ['jpeg', 'png', 'webp'];
+    const allowed = ['gifToJpg', 'gifToPng'].includes(tool) ? ['gif'] : tool === 'avifToPng' ? ['avif'] : (tool === 'heic' || tool === 'heicPng') ? ['heic'] : (tool === 'webp' || tool === 'webpJpg' || tool === 'webpBulk') ? ['webp'] : tool === 'avif' ? ['avif'] : tool === 'pngJpg' ? ['png'] : tool === 'jpgPng' ? ['jpeg'] : tool === 'toWebp' ? ['png', 'jpeg'] : tool === 'toIco' ? ['png', 'jpeg', 'webp'] : tool === 'pngToGif' ? ['png'] : ['jpeg', 'png', 'webp'];
     if (!allowed.includes(sourceFormat)) throw codedError('WRONG_FORMAT');
     if (signal?.aborted) throw codedError('CANCELLED');
     let source, bitmap, sourceWidth, sourceHeight, frameOnly = isAnimated(header, sourceFormat);
@@ -270,8 +271,8 @@
     if (!files.length || files.length > 30) throw codedError('ENCODE');
     if (!globalThis.gifencExports?.GIFEncoder) throw codedError('ENCODE');
     for (const file of files) {
-      const header = new Uint8Array(await file.slice(0, 6).arrayBuffer());
-      if (sniff(header) !== 'jpeg') throw codedError('WRONG_FORMAT'); // 任一非 JPG → 整批失败
+      const header = new Uint8Array(await file.slice(0, 8).arrayBuffer());
+      if (sniff(header) !== (settings.inputFormat || 'jpeg')) throw codedError('WRONG_FORMAT'); // 任一非 JPG → 整批失败
     }
     const delay = Math.min(2000, Math.max(100, Number(settings.delay) || 500));
     const { GIFEncoder, quantize, applyPalette } = globalThis.gifencExports;
@@ -314,13 +315,77 @@
       }
       gif.finish();
       const blob = new Blob([gif.bytes()], { type: 'image/gif' });
-      return { blob, width, height, frames: files.length, delay, sourceBytes, sourceWidth: firstWidth, sourceHeight: firstHeight, sourceFormat: 'jpeg', frameOnly: false };
+      return { blob, width, height, frames: files.length, delay, sourceBytes, sourceWidth: firstWidth, sourceHeight: firstHeight, sourceFormat: settings.inputFormat || 'jpeg', frameOnly: false };
     } catch (error) {
       if (error.code) throw error;
       throw codedError(error instanceof RangeError ? 'MEMORY' : 'DECODE');
     } finally { canvas.width = canvas.height = 1; }
   }
 
-  globalThis.PicCore = Object.freeze({ sniff, outputType, dimensions, uniqueName, isAnimated, sizeChange, canZip, searchTarget, targetType, convert, convertGif });
+  async function splitImage(file, settings, signal, used) {
+    const header = new Uint8Array(await file.slice(0, 65536).arrayBuffer());
+    const sourceFormat = sniff(header);
+    if (!['jpeg', 'png', 'webp', 'gif', 'avif'].includes(sourceFormat)) throw codedError('WRONG_FORMAT');
+    if (signal?.aborted) throw codedError('CANCELLED');
+    let bitmap;
+    try { bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+    catch (error) { if (sourceFormat === 'avif' && !(error instanceof RangeError)) throw codedError('AVIF_DECODE'); throw error; }
+    const sourceWidth = bitmap.width, sourceHeight = bitmap.height;
+    const frameOnly = isAnimated(header, sourceFormat);
+    const mode = settings.splitMode === 'grid' ? 'grid' : 'equal';
+    let rows, cols, parts, direction;
+    if (mode === 'grid') {
+      rows = Math.min(20, Math.max(1, Math.round(Number(settings.splitRows) || 3)));
+      cols = Math.min(20, Math.max(1, Math.round(Number(settings.splitCols) || 3)));
+    } else {
+      parts = Math.min(5, Math.max(2, Math.round(Number(settings.splitParts) || 2)));
+      direction = settings.splitDirection === 'rows' ? 'rows' : 'cols';
+      rows = direction === 'rows' ? parts : 1; cols = direction === 'rows' ? 1 : parts;
+    }
+    if (rows * cols > 400) { bitmap.close(); throw codedError('ENCODE'); } // UI 钳制已防住，纯防御
+    // 网格先 cover 裁切到行列比画幅（居中，不拉伸）；等份不裁切，沿整图切
+    let sx = 0, sy = 0, sw = sourceWidth, sh = sourceHeight;
+    if (mode === 'grid') {
+      const targetAspect = cols / rows, sourceAspect = sourceWidth / sourceHeight;
+      if (sourceAspect > targetAspect) { sw = Math.round(sourceHeight * targetAspect); sx = Math.round((sourceWidth - sw) / 2); }
+      else if (sourceAspect < targetAspect) { sh = Math.round(sourceWidth / targetAspect); sy = Math.round((sourceHeight - sh) / 2); }
+    }
+    if (sw < cols || sh < rows) { bitmap.close(); throw codedError('ENCODE'); }
+    const stem = String(file.name).replace(/\.[^.]*$/, '').replace(/[\\/\x00-\x1f\x7f<>:"|?*]/g, '_').replace(/^\.+/, '').trim().slice(0, 160) || 'image';
+    const canvas = document.createElement('canvas');
+    const tiles = [];
+    try {
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          if (signal?.aborted) throw codedError('CANCELLED');
+          // 整数切分：余数归最后一行/列，块尺寸之和精确等于裁切后画幅
+          const x0 = sx + Math.floor(sw * col / cols), x1 = sx + Math.floor(sw * (col + 1) / cols);
+          const y0 = sy + Math.floor(sh * row / rows), y1 = sy + Math.floor(sh * (row + 1) / rows);
+          const w = Math.max(1, x1 - x0), h = Math.max(1, y1 - y0);
+          canvas.width = w; canvas.height = h;
+          const context = canvas.getContext('2d');
+          if (!context) throw codedError('MEMORY');
+          context.imageSmoothingEnabled = true; context.imageSmoothingQuality = 'high';
+          context.drawImage(bitmap, x0, y0, w, h, 0, 0, w, h);
+          const blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(codedError('ENCODE')), 'image/png'));
+          const suffix = mode === 'grid' ? `-r${row + 1}c${col + 1}` : `-part${(direction === 'rows' ? row : col) + 1}`;
+          const base = stem.slice(0, 160 - suffix.length) + suffix;
+          tiles.push({ blob, name: uniqueName(base + '.png', 'png', used), width: w, height: h, row: row + 1, col: col + 1 });
+          await new Promise(resolve => setTimeout(resolve, 0)); // 让出主线程，取消可介入
+          if (signal?.aborted) throw codedError('CANCELLED');
+        }
+      }
+      const zip = new JSZip();
+      for (const tile of tiles) zip.file(tile.name, tile.blob);
+      const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
+      if (signal?.aborted) throw codedError('CANCELLED');
+      return { blob: zipBlob, tiles, width: sw, height: sh, rows, cols, mode, sourceWidth, sourceHeight, sourceFormat, frameOnly, sourceBytes: file.size };
+    } catch (error) {
+      if (error.code) throw error;
+      throw codedError(error instanceof RangeError ? 'MEMORY' : 'DECODE');
+    } finally { bitmap.close(); canvas.width = canvas.height = 1; }
+  }
+
+  globalThis.PicCore = Object.freeze({ sniff, outputType, dimensions, uniqueName, isAnimated, sizeChange, canZip, searchTarget, targetType, convert, convertGif, splitImage });
 })();
 

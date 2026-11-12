@@ -3,7 +3,7 @@
   'use strict';
   const base = new URL('.', document.currentScript.src);
   const pending = new Map();
-  const samples = Object.freeze({ gifToJpg: 'samples/gif-to-jpg.js', gifToPng: 'samples/gif-to-png.js', jpgToGif: 'samples/jpg-to-gif.js', heic: 'samples/heic.js', webp: 'samples/webp.js', compress: 'samples/compress.js', webpJpg: 'samples/webp-jpg.js', svg: 'samples/svg.js', pngJpg: 'samples/png-jpg.js', jpgPng: 'samples/jpg-png.js', toWebp: 'samples/to-webp.js', toIco: 'samples/to-ico.js', svgToIco: 'samples/svg-to-ico.js' });
+  const samples = Object.freeze({ splitter: 'samples/image-splitter.js', split4: 'samples/image-splitter.js', split9: 'samples/image-splitter.js', splitEqual: 'samples/image-splitter.js', pngToGif: 'samples/png-to-gif.js', gifToJpg: 'samples/gif-to-jpg.js', gifToPng: 'samples/gif-to-png.js', jpgToGif: 'samples/jpg-to-gif.js', heic: 'samples/heic.js', webp: 'samples/webp.js', compress: 'samples/compress.js', webpJpg: 'samples/webp-jpg.js', svg: 'samples/svg.js', pngJpg: 'samples/png-jpg.js', jpgPng: 'samples/jpg-png.js', toWebp: 'samples/to-webp.js', toIco: 'samples/to-ico.js', svgToIco: 'samples/svg-to-ico.js' });
   const error = code => Object.assign(new Error(code), { code });
   function load(path) {
     const url = new URL(path, base).href;
