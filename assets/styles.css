@@ -189,3 +189,9 @@ body[data-tool]:not([data-tool="home"]):not([data-tool^="guide"]):not([data-tool
 .featured-example-tag.tag-heic{left:8px}
 .featured-example-tag.tag-jpg{right:8px}
 @media(max-width:740px){.featured-example img{height:150px}}
+
+/* Small fix 2026-11-13: split-grid rows/columns controls sit 1px apart; a focus outline
+   can cover the trailing "s" of the Columns label. Give the row a real gap so items
+   never touch, and let it wrap instead of clipping on narrow screens. */
+#split-grid-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+#split-grid-controls>label{margin:0}
