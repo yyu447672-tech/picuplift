@@ -44,6 +44,12 @@
 - [How to Convert a GIF to JPG on iPhone](https://picuplift.com/how-to-convert-gif-to-jpg-on-iphone.html): Three methods to convert a GIF to JPG on iPhone, including PicUplift.
 - [How to Turn Multiple Photos into an Animated GIF](https://picuplift.com/how-to-turn-photos-into-animated-gif.html): Browser converter, iPhone Shortcuts, and GIMP methods for making an animated GIF from photos.
 
+- [Free Alternative to CloudConvert for HEIC to JPG](https://picuplift.com/cloudconvert-alternative-heic-to-jpg.html): Convert HEIC to JPG without uploading and compare cloud processing.
+- [PicUplift vs Convertio](https://picuplift.com/picuplift-vs-convertio.html): Compare browser-local image conversion with cloud conversion.
+- [Is It Safe to Upload Photos to a Free Image Converter?](https://picuplift.com/safe-to-upload-photos-to-free-converter.html): Understand photo upload risks and browser-local conversion.
+- [What Is HEIC and Why Can't Windows Open It?](https://picuplift.com/what-is-heic.html): Learn what HEIC is and how to open or convert it on Windows.
+- [JPG vs WebP: What's the Difference?](https://picuplift.com/jpg-vs-webp.html): Compare JPG and WebP for compatibility, size and transparency.
+
 ## Privacy
 - [Privacy Policy](https://picuplift.com/privacy-policy.html): What PicUplift collects (Google Analytics for visits and interactions only), what the Chrome extension does not collect, and how to contact the publisher.
 
