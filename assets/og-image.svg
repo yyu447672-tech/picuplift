@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-<rect width="1200" height="630" fill="#f7f8fa"/>
-<g fill="#235bd8" font-family="Arial,Helvetica,sans-serif">
+<rect width="1200" height="630" fill="#FAF6EF"/>
+<g fill="#CE1B26" font-family="Arial,Helvetica,sans-serif">
 <text x="78" y="109" font-size="47" font-weight="700" letter-spacing="-2">PicUplift.</text>
-<path d="M78 151H1122" stroke="#d0dcef"/>
+<path d="M78 151H1122" stroke="#F0D5D3"/>
 <text x="78" y="267" font-size="67" font-weight="700" letter-spacing="-2.5">Free, Private Image Tools</text>
 <text x="78" y="349" font-size="67" font-weight="700" letter-spacing="-2.5">— In Your Browser</text>
 <text x="80" y="430" font-size="25">HEIC to JPG / WebP to PNG / Image compression</text>
-<path d="M78 490H1122" stroke="#d0dcef"/>
+<path d="M78 490H1122" stroke="#F0D5D3"/>
 <text x="80" y="551" font-size="23">100% free · No signup · No uploads</text>
 <text x="1122" y="551" text-anchor="end" font-size="23">picuplift.com</text>
 </g></svg>
