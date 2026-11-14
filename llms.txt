@@ -50,6 +50,10 @@
 - [What Is HEIC and Why Can't Windows Open It?](https://picuplift.com/what-is-heic.html): Learn what HEIC is and how to open or convert it on Windows.
 - [JPG vs WebP: What's the Difference?](https://picuplift.com/jpg-vs-webp.html): Compare JPG and WebP for compatibility, size and transparency.
 
+- [How to Reduce PNG File Size Without Losing Quality](https://picuplift.com/how-to-reduce-png-file-size.html): Convert to WebP, resize to display size, and strip unneeded data — without visible quality loss.
+- [How to Convert JPG to PDF](https://picuplift.com/how-to-convert-jpg-to-pdf.html): Add JPGs in order and download one PDF, one image per A4 page — no signup, no uploads.
+- [How to Convert PNG to JPG](https://picuplift.com/how-to-convert-png-to-jpg.html): Pick a quality, keep the photo sharp, and download the JPG — transparent areas become white.
+
 ## Privacy
 - [Privacy Policy](https://picuplift.com/privacy-policy.html): What PicUplift collects (Google Analytics for visits and interactions only), what the Chrome extension does not collect, and how to contact the publisher.
 
